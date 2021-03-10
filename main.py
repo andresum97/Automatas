@@ -1,8 +1,10 @@
+import thompson
+
 # Metodo que agrega el valor de . a la expresion
 # para facilitar la lectura de la concatenacion
-def ingresar_concatenacion(expresion):
+def add_concat(expresion):
     new_word = ""
-    operators = ['*','|','(','?']
+    operators = ['*','|','(','?','+']
     cont = 0
     while cont < len(expresion):
         if cont+1 >= len(expresion):
@@ -32,3 +34,52 @@ def ingresar_concatenacion(expresion):
             cont += 1
     
     return new_word
+
+
+def replace(r):
+     #ε
+    i = 0
+    expr = ''
+    par = []
+    sub = ''
+    resta = []
+    while i <len(r):
+        if(r[i] =='('):
+            par.append(i)
+        if r[i] == '+':
+            
+            if(r[i-1] == ')'):
+
+                sub = r[par.pop():i]
+                
+                expr = expr + '*' + sub
+            else:
+                expr = expr + '*' + r[i-1]
+        elif r[i] == '?':
+            if(r[i-1] == ')'):
+    
+                sub = r[par.pop():i]
+                subl = len(sub)-1
+                expr = expr[:-subl]
+                expr = expr + sub
+                expr = expr  +  '|' + 'ε)'
+            else:
+                letra = expr[-1]
+                expr = expr[:-1]
+                expr = expr + '(' + letra + '|' + 'ε)'
+        else:
+            expr = expr + r[i]
+        i+=1
+
+    return expr
+
+
+expression =  input("Ingresar expresion")
+
+res = replace(expression)
+res_final = add_concat(res)
+print("Nueva expresion",res_final)
+
+
+th = thompson.Thompson(res_final,'')
+
