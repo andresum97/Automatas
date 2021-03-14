@@ -82,4 +82,6 @@ print("Nueva expresion",res_final)
 
 
 th = thompson.Thompson(res_final,'')
+th_states, th_symbols, th_begin, th_end, th_transition = th.get_results()
+
 
