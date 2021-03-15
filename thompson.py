@@ -329,7 +329,7 @@ class Thompson:
             for j in i.get_transitions():
                 transicion.append((i.get_id(),j[0],j[1]))
 
-        print("======= Resultados ========")
+        print("======= Resultados Thompson ========")
         print("Estados => ",estados)
         print("Simbolos => ",list(dict.fromkeys(self.alphabet)))
         print("Inicio => ",self.first_final.get_id())

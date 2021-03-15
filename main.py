@@ -1,4 +1,5 @@
 import thompson
+import subconjuntos
 
 # Metodo que agrega el valor de . a la expresion
 # para facilitar la lectura de la concatenacion
@@ -83,5 +84,7 @@ print("Nueva expresion",res_final)
 
 th = thompson.Thompson(res_final,'')
 th_states, th_symbols, th_begin, th_end, th_transition = th.get_results()
+
+sb = subconjuntos.Subconjuntos(th_states, th_symbols, th_begin, th_end, th_transition)
 
 
