@@ -220,6 +220,11 @@ class Thompson:
                 transicion.append((i.get_id(),j[0],j[1]))
         
         simbolos = list(dict.fromkeys(self.alphabet))
+        try:
+            simbolos.remove('ε')
+        except:
+            pass
+        
         inicio  = self.first_final.get_id()
         final = self.last_final.get_id()
         return estados, simbolos, inicio, final, transicion

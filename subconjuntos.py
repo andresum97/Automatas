@@ -24,6 +24,7 @@ class Subconjuntos:
                 for element in self.transitions:
                     if element[0] == val and element[1] =='ε':
                         values.append(element[2])
+            values.sort()
             self.all_states[str(values)] = 'S0'
             self.all_states_list.append(values)
         else:
@@ -32,6 +33,8 @@ class Subconjuntos:
                 for element in self.transitions:
                     if element[0] == val and element[1] =='ε':
                         values.append(element[2])
+
+            values.sort()
 
             if(not(str(values) in self.all_states)):
                 num = str(len(self.all_states.keys()))
@@ -51,7 +54,7 @@ class Subconjuntos:
 
 
         values = list(dict.fromkeys(values))
-        print('Values',values)
+        print('Closure-e: ',values,' -> Estado:',state)
 
         return state
 
@@ -64,7 +67,7 @@ class Subconjuntos:
                     res.append(element[2])
 
         res = list(dict.fromkeys(res))
-        print("Resultado mov",res)
+        print("Resultado mov con simbolo",sym, '->',res)
 
         # if(not(str(values) in self.all_states)):
         #     num = str(len(self.all_states.keys())+1)
