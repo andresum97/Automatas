@@ -124,6 +124,9 @@ class Thompson:
                 self.all_nodes.append(medio)
                 self.all_nodes.append(ultimo)
                 self.cont_nodes += 2
+
+                return primer,ultimo
+                
             elif not(type(val1) == tuple) and type(val2) == tuple:
                 self.cont_nodes += 1
                 primer = node.Node(self.cont_nodes,[(val1,val2[0].get_id())])
@@ -333,6 +336,11 @@ class Thompson:
             estados.append(i.get_id())
             for j in i.get_transitions():
                 transicion.append((i.get_id(),j[0],j[1]))
+
+        try:
+            self.alphabet.remove('ε')
+        except:
+            pass
 
         print("======= Resultados Thompson ========")
         print("Estados => ",estados)

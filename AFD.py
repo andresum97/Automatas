@@ -268,8 +268,7 @@ class AFD:
             for val in element:
                 self._infoLeaf[_id][1].append(val)
         elif value == 'ε':
-            _firstpos = ''
-            self._infoLeaf[_id][1].append(_firstpos)
+            self._infoLeaf[_id][1] = []
         else:
             _firstpos = leaf.get_idValue()
             self._infoLeaf[_id][1].append(_firstpos)
@@ -306,8 +305,7 @@ class AFD:
             for val in element:
                 self._infoLeaf[_id][2].append(val)
         elif value == 'ε':
-            _lastpos = ''
-            self._infoLeaf[_id][2].append(_lastpos)
+            self._infoLeaf[_id][2] = []
         else:
             _firstpos = leaf.get_idValue()
             self._infoLeaf[_id][2].append(_firstpos)
@@ -370,6 +368,7 @@ class AFD:
 
                 if temp_state != []:
                     temp_state.sort()
+                    temp_state = list(dict.fromkeys(temp_state))
                     print("Valor de estado",temp_state)
                     
                     if(not(str(temp_state)) in self.all_states):

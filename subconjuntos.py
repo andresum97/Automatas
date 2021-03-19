@@ -18,12 +18,15 @@ class Subconjuntos:
     def e_closure(self,val_ele):
         values = []
         state = ""
+        visited = []
         if not(type(val_ele) == list):
             values.append(val_ele)
+            values = list(dict.fromkeys(values))
             for val in values:
                 for element in self.transitions:
-                    if element[0] == val and element[1] =='ε':
+                    if element[0] == val and element[1] =='ε' and element[2] not in visited:
                         values.append(element[2])
+                        visited.append(element[2])
             values.sort()
             self.all_states[str(values)] = 'S0'
             self.all_states_list.append(values)
@@ -31,8 +34,9 @@ class Subconjuntos:
             values = val_ele.copy() #[2]
             for val in values:
                 for element in self.transitions:
-                    if element[0] == val and element[1] =='ε':
+                    if element[0] == val and element[1] =='ε' and element[2] not in visited:
                         values.append(element[2])
+                        visited.append(element[2])
 
             values.sort()
 
