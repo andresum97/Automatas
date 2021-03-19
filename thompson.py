@@ -285,7 +285,7 @@ class Thompson:
 
 
         values = list(dict.fromkeys(values))
-        print('Closure-e: ',values,' -> Estado:',state)
+       # print('Closure-e: ',values,' -> Estado:',state)
 
         return values
 
@@ -298,7 +298,7 @@ class Thompson:
                     res.append(element[2])
 
         res = list(dict.fromkeys(res))
-        print("Resultado mov con simbolo",sym, '->',res)
+    #    print("Resultado mov con simbolo",sym, '->',res)
 
         # if(not(str(values) in self.all_states)):
         #     num = str(len(self.all_states.keys())+1)

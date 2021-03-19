@@ -76,19 +76,22 @@ def replace(r):
     return expr
 
 
-expression =  input("Ingresar expresion")
-word = input("Ingrese palabra")
+expression =  input("Ingresar expresion: ")
+word = input("Ingrese palabra: ")
 
 res = replace(expression)
 res_final = add_concat(res)
 print("Nueva expresion",res_final)
 
 
-th = thompson.Thompson(res_final,word)
-th_states, th_symbols, th_begin, th_end, th_transition = th.get_results()
+try:
+    th = thompson.Thompson(res_final,word)
+    th_states, th_symbols, th_begin, th_end, th_transition = th.get_results()
 
-sb = subconjuntos.Subconjuntos(th_states, th_symbols, th_begin, th_end, th_transition,word)
+    sb = subconjuntos.Subconjuntos(th_states, th_symbols, th_begin, th_end, th_transition,word)
 
-afd = AFD.AFD(res_final,word)
+    afd = AFD.AFD(res_final,word)
+except:
+    print("La cadena ingresa no es válida")
 
 

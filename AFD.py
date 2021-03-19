@@ -362,7 +362,7 @@ class AFD:
                         # print('Leaf',_leaf)
                         if _leaf[1][4] == element:
                             temp_state += _leaf[1][3]
-                            print("print",_leaf[1])
+                          #  print("print",_leaf[1])
                             # if self.last_state == _leaf[1][3]:
                             #     _isFinal = True
 
@@ -391,9 +391,12 @@ class AFD:
     def Simulacion(self):
         _state = 'S0'
         _isValid = True
+        _isInSymbol = True
         for c in self.word:
             if not(_isValid):
                 break
+            if c not in self.alphabet:
+                _isInSymbol = False
             for t in self.routes:
                 if t[0] == _state and t[1] == c:
                     _state = t[2]
@@ -402,7 +405,7 @@ class AFD:
                 else:
                     _isValid = False
 
-        if(_state in self.states_final):
+        if(_state in self.states_final and _isInSymbol):
             print("""
             *******************************
             SI en AFD
@@ -496,8 +499,8 @@ class AFD:
             self.values.append((self.root,))#val2+op+val1)
 
         # print("all leaf",self.all_leaf)
-        for e in self.all_leaf:
-            print(e.get_id(),", - valor de nodo ->",e.get_value(),'- hijos -> ',e.get_children(),'- valor de hoja -> ',e.get_idValue())
+        # for e in self.all_leaf:
+        #     print(e.get_id(),", - valor de nodo ->",e.get_value(),'- hijos -> ',e.get_children(),'- valor de hoja -> ',e.get_idValue())
 
         #Nullable
         for e in self.all_leaf:
@@ -569,8 +572,12 @@ class AFD:
         #     estados.append(i.get_id())
         #     for j in i.get_transitions():
         #         transicion.append((i.get_id(),j[0],j[1]))
+        try:
+            self.alphabet.remove('ε')
+        except:
+            pass
 
-        print("======= Resultados Thompson ========")
+        print("======= Resultados AFD ========")
         print("Estados => ",self.all_states.values())
         print("Simbolos => ",list(dict.fromkeys(self.alphabet)))
         print("Inicio => ",list(self.all_states.values())[0])

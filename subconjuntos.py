@@ -96,9 +96,12 @@ class Subconjuntos:
     def Simulacion(self,inicio):
         _state = 'S0'
         _isValid = True
+        _isInSymbol = True
         for c in self.word:
             if not(_isValid):
                 break
+            if c not in self.symbols:
+                _isInSymbol = False
             for t in self.routes:
                 if t[0] == _state and t[1] == c:
                     _state = t[2]
@@ -118,7 +121,7 @@ class Subconjuntos:
         #     if(i in S):
         #         cont+=1
         
-        if(_state in self.states_final):
+        if(_state in self.states_final and _isInSymbol == True):
             print("""
             *******************************
             SI en Subconjuntos
