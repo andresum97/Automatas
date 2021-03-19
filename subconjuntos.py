@@ -1,8 +1,10 @@
 from graphviz import Digraph
 import ast
+import json
 
 class Subconjuntos:
-    def __init__(self, estados, simbolos, inicio, final, transicion):
+    def __init__(self, estados, simbolos, inicio, final, transicion,word):
+        self.word = word
         self.states = estados
         self.symbols = simbolos
         self.initial = inicio
@@ -58,7 +60,7 @@ class Subconjuntos:
 
 
         values = list(dict.fromkeys(values))
-        print('Closure-e: ',values,' -> Estado:',state)
+        # print('Closure-e: ',values,' -> Estado:',state)
 
         return state
 
@@ -71,7 +73,7 @@ class Subconjuntos:
                     res.append(element[2])
 
         res = list(dict.fromkeys(res))
-        print("Resultado mov con simbolo",sym, '->',res)
+        # print("Resultado mov con simbolo",sym, '->',res)
 
         # if(not(str(values) in self.all_states)):
         #     num = str(len(self.all_states.keys())+1)
@@ -83,6 +85,51 @@ class Subconjuntos:
         # values = list(dict.fromkeys(values))
         # print('Values',values)
 
+    def getValuesState(self,val):
+        key_list = list(self.all_states.keys())
+        val_list = list(self.all_states.values())
+
+        position = val_list.index(val)
+
+        return json.loads(key_list[position])
+
+    def Simulacion(self,inicio):
+        _state = 'S0'
+        _isValid = True
+        for c in self.word:
+            if not(_isValid):
+                break
+            for t in self.routes:
+                if t[0] == _state and t[1] == c:
+                    _state = t[2]
+                    _isValid = True
+                    break
+                else:
+                    _isValid = False
+                    
+
+        # S = inicio
+        # cont = 0
+        # for c in self.word:
+        #     S = self.move(S,c)
+        
+        # for i in self.states_final:
+        #     #_temp = self.getValuesState(i)
+        #     if(i in S):
+        #         cont+=1
+        
+        if(_state in self.states_final):
+            print("""
+            *******************************
+            SI en Subconjuntos
+            ********************************
+            """)
+        else:
+            print("""
+            *******************************
+            NO en Subconjuntos
+            ********************************
+            """)
 
     def process(self):
         for key in self.all_states_list:
@@ -119,3 +166,18 @@ class Subconjuntos:
         print("Aceptacion => ",self.states_final)
         print("Transicion => ", self.routes)
 
+        cadena = f'''
+        ============= RESULTADOS DE SUBCONJUNTOS ==========
+        Estados => {self.all_states.values()}
+        Simbolos => {self.symbols}
+        Inicio => S0
+        Aceptacion => {self.states_final}
+        Transicion => {self.routes}
+        '''
+        # print(cadena)
+        with open('resultados_subconjuntos.txt',"w",encoding="utf-8") as f:
+            f.write(cadena)
+        f.close()
+
+        s0 = self.getValuesState('S0')
+        self.Simulacion(s0)

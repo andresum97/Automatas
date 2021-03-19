@@ -12,6 +12,14 @@ class Thompson:
         self.alphabet = []
         self.last_final = None
         self.first_final = None
+        self.states = None
+        self.symbols = None
+        self.final = None
+        self.initial = None
+        self.transitions = None
+        self.states_final = []
+        self.all_states = {}
+        self.all_states_list = []
         self.process_expression()
 
     def nodes_or(self,val1,val2):
@@ -232,6 +240,97 @@ class Thompson:
         final = self.last_final.get_id()
         return estados, simbolos, inicio, final, transicion
 
+    #============================= SIMULACION ===================================================
+
+    def e_closure(self,val_ele):
+        values = []
+        state = ""
+        visited = []
+        if not(type(val_ele) == list):
+            values.append(val_ele)
+            values = list(dict.fromkeys(values))
+            for val in values:
+                for element in self.transitions:
+                    if element[0] == val and element[1] =='ε' and element[2] not in visited:
+                        values.append(element[2])
+                        visited.append(element[2])
+            values.sort()
+            self.all_states[str(values)] = 'S0'
+            self.all_states_list.append(values)
+        else:
+            values = val_ele.copy() #[2]
+            for val in values:
+                for element in self.transitions:
+                    if element[0] == val and element[1] =='ε' and element[2] not in visited:
+                        values.append(element[2])
+                        visited.append(element[2])
+
+            values.sort()
+
+            if(not(str(values) in self.all_states)):
+                num = str(len(self.all_states.keys()))
+                self.all_states[str(values)] = 'S'+num
+                state = 'S'+num
+                self.all_states_list.append(values)
+            else:
+                state = self.all_states[str(values)]
+
+            try:
+                if(values.index(self.final) > -1):
+                    self.states_final.append(state)
+            except:
+                pass
+
+        
+
+
+        values = list(dict.fromkeys(values))
+        print('Closure-e: ',values,' -> Estado:',state)
+
+        return values
+
+    def move(self,_list,sym):
+        values = _list.copy()
+        res = []
+        for val in values:
+            for element in self.transitions:
+                if element[0] == val and element[1] == sym:
+                    res.append(element[2])
+
+        res = list(dict.fromkeys(res))
+        print("Resultado mov con simbolo",sym, '->',res)
+
+        # if(not(str(values) in self.all_states)):
+        #     num = str(len(self.all_states.keys())+1)
+        #     self.all_states[str(values)] = 'S'+num
+
+        return res
+    
+    def Simulation(self):
+        validation_mov = False
+        self.e_closure(self.initial)
+        c = self.word
+        S = list(self.all_states_list[0])
+        for letter in c:
+            res_mov = self.move(S,letter)
+            if len(res_mov) > 0:
+                S = self.e_closure(res_mov)
+                validation_mov = True
+
+        
+        if(self.final in S and validation_mov):
+            print("""
+            *******************************
+            SI en Thompson
+            ********************************
+            """)
+        else:
+            print("""
+            *******************************
+            NO en Thompson
+            ********************************
+            """)
+
     #Metodo para procesar la expresion ingresada e iniciar la creacion de nodos y sus transiciones
     def process_expression(self):
         cont = 0
@@ -250,12 +349,12 @@ class Thompson:
                     if op != '*':
                         val2 = self.values.pop()
                         val1 = self.values.pop()
-                        print('Valor 1: ',val1)
-                        print('Valor 2: ',val2)
+                        # print('Valor 1: ',val1)
+                        # print('Valor 2: ',val2)
                      #   print("La expresion: ",val1+op+val2)
                         first,last =  self.operations(op,val1,val2)
                         #self.nodes_or(val1,val2,True)
-                        print("Nodos")
+                        # print("Nodos")
 
                         self.values.append((first,last))##val1+op+val2)
                     #    nodes.append(val1+op+val2)
@@ -274,13 +373,13 @@ class Thompson:
                         val2 = self.values.pop()
                         val1 = self.values.pop()
                         op = self.operators.pop()
-                        print('Valor 1: ',val1)
-                        print('Valor 2: ',val2)
+                        # print('Valor 1: ',val1)
+                        # print('Valor 2: ',val2)
                   #      print("La expresion: ",val1+op+val2)
                         first,last = self.operations(op,val1,val2)
                         self.values.append((first,last))#val1+op+val2)
                         #self.nodes_or(val1,val2,True)
-                        print("Nodos",self.all_nodes)
+                        # print("Nodos",self.all_nodes)
                      #   nodes.append(self.expression[cont]) 
 
                     self.operators.append(self.expression[cont])
@@ -301,15 +400,15 @@ class Thompson:
 
 
         while(self.operators):
-            print("ultimo while")
-            print("Valores",self.values)
-            print("Operadores",self.operators)
+            # print("ultimo while")
+            # print("Valores",self.values)
+            # print("Operadores",self.operators)
             val2 = self.values.pop()
             val1 = self.values.pop()
             op = self.operators.pop()
 
-            print('Valor 1: ',val1)
-            print('Valor 2: ',val2)
+            # print('Valor 1: ',val1)
+            # print('Valor 2: ',val2)
             #print("La expresion: ",val1+op+val2)
             self.first_final,self.last_final = self.operations(op,val1,val2)
             self.values.append((first,last))#val2+op+val1)
@@ -348,3 +447,23 @@ class Thompson:
         print("Inicio => ",self.first_final.get_id())
         print("Aceptacion => ",self.last_final.get_id())
         print("Transicion => ",transicion)
+
+        self.alphabet = list(dict.fromkeys(self.alphabet))
+        inicio = self.first_final.get_id()
+        final = self.last_final.get_id()
+        cadena = f'''
+        ============= RESULTADOS DE THOMPSON ==========
+        Estados => {estados}
+        Simbolos => {self.alphabet}
+        Inicio => {inicio}
+        Aceptacion => {final}
+        Transicion => {transicion}
+        '''
+        # print(cadena)
+        with open('resultados_thompson.txt',"w",encoding="utf-8") as f:
+            f.write(cadena)
+        f.close()
+
+        self.states,self.symbols,self.initial,self.final,self.transitions = self.get_results()
+        self.Simulation()
+

@@ -77,17 +77,18 @@ def replace(r):
 
 
 expression =  input("Ingresar expresion")
+word = input("Ingrese palabra")
 
 res = replace(expression)
 res_final = add_concat(res)
 print("Nueva expresion",res_final)
 
 
-th = thompson.Thompson(res_final,'')
+th = thompson.Thompson(res_final,word)
 th_states, th_symbols, th_begin, th_end, th_transition = th.get_results()
 
-sb = subconjuntos.Subconjuntos(th_states, th_symbols, th_begin, th_end, th_transition)
+sb = subconjuntos.Subconjuntos(th_states, th_symbols, th_begin, th_end, th_transition,word)
 
-afd = AFD.AFD(res_final,'')
+afd = AFD.AFD(res_final,word)
 
 

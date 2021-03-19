@@ -29,7 +29,7 @@ class AFD:
     def nodes_or(self,val1,val2):
         temp_val = [val1,val2]
         if len(self.all_leaf) == 0:    #En caso es inicio haciendo un |
-            print("Entro a or cuando esta vacio")
+            # print("Entro a or cuando esta vacio")
             #Creo el primer y el ultimo nodo
             val1_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+2,self.cont_valueleaf,[]) #node.Node(self.cont_nodes,[('ε',self.cont_nodes+1),('ε',self.cont_nodes+3)])
             val2_leaf = leaf.Leaf(self.cont_leaf+1,val2,self.cont_leaf+2,self.cont_valueleaf+1,[])
@@ -92,7 +92,7 @@ class AFD:
 
     def nodes_cat(self,val1,val2):
         if len(self.all_leaf) == 0:
-            print("Entro a cat cuando esta vacio")
+            # print("Entro a cat cuando esta vacio")
             val1_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+2,self.cont_valueleaf,[]) #node.Node(self.cont_nodes,[('ε',self.cont_nodes+1),('ε',self.cont_nodes+3)])
             val2_leaf = leaf.Leaf(self.cont_leaf+1,val2,self.cont_leaf+2,self.cont_valueleaf+1,[])
             op_leaf = leaf.Leaf(self.cont_leaf+2,'.',None,None,[self.cont_leaf,self.cont_leaf+1])
@@ -105,7 +105,7 @@ class AFD:
 
         else:
             if not(type(val1) == tuple) and not(type(val2) == tuple):
-                print("Entro a cat cuando esta ni a y b son tuplas")
+                # print("Entro a cat cuando esta ni a y b son tuplas")
                 self.cont_leaf += 1
                 val1_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+1,self.cont_valueleaf+1,[]) #node.Node(self.cont_nodes,[('ε',self.cont_nodes+1),('ε',self.cont_nodes+3)])
                 val2_leaf = leaf.Leaf(self.cont_leaf+1,val2,self.cont_leaf+2,self.cont_valueleaf+2,[])
@@ -118,7 +118,7 @@ class AFD:
                 return op_leaf
 
             elif type(val1) == tuple and not(type(val2) == tuple):
-                print("Entro a cat cuando a es una tupla y b no lo es")
+                # print("Entro a cat cuando a es una tupla y b no lo es")
                 self.cont_leaf += 1
                 val2_leaf = leaf.Leaf(self.cont_leaf,val2,self.cont_leaf+1,self.cont_valueleaf+1,[])
                 val1[0].set_parent(self.cont_leaf+1)
@@ -240,7 +240,7 @@ class AFD:
         value = leaf.get_value()
         _id = leaf.get_id()
         _firstpos = None
-        print("Id",_id)
+        # print("Id",_id)
         if value == '|':
             children = leaf.get_children()
             for element in children:
@@ -278,7 +278,7 @@ class AFD:
         value = leaf.get_value()
         _id = leaf.get_id()
         _lastpos = None
-        print("Id",_id)
+        # print("Id",_id)
         if value == '|':
             children = leaf.get_children()
             for element in children:
@@ -313,7 +313,7 @@ class AFD:
     def followpos(self,leaf):
         value = leaf.get_value()
         _id = leaf.get_id()
-        print("Id",_id)
+        # print("Id",_id)
         if value == '.' and len(leaf.get_children()) == 2:
             childrens = leaf.get_children()
             _lastpos = self._infoLeaf[childrens[0]][2]
@@ -328,25 +328,25 @@ class AFD:
             for element in _lastpos:
                 for val in _firstpos_n:
                     realid = self.getIdByValue(element)
-                    print("realid",realid)
-                    print(self._infoLeaf)
+                    # print("realid",realid)
+                    # print(self._infoLeaf)
                     self._infoLeaf[realid][3].append(val)
 
     def create_states(self):
         cont_states = 1
-        print('Raiz',self.root.get_id())
+        # print('Raiz',self.root.get_id())
         self.alphabet.remove('#')
         fp_root = self._infoLeaf[self.root.get_id()][1] #First pos de la raiz o estado A
-        print(fp_root)
+        # print(fp_root)
         temp_values_state = []
         self.all_states[str(fp_root)] = 'S0'
         self.list_states.append(fp_root)
         _isFinal = False
 
         for states in self.list_states:
-            print("Lista de estados",states)
+            # print("Lista de estados",states)
             for letter in self.alphabet:
-                print("Letra del alfabeto",letter)
+                # print("Letra del alfabeto",letter)
                 for val in states:
                     # print("Valor del estado",val)
                     # print("Valor de hojas",self.leaf_values)
@@ -355,7 +355,7 @@ class AFD:
 
                 temp_values_state = list(dict.fromkeys(temp_values_state))
                 temp_values_state.sort()
-                print('Valores temporales',temp_values_state)
+                # print('Valores temporales',temp_values_state)
                 temp_state = []
                 for element in temp_values_state:
                     for _leaf in self._infoLeaf.items():
@@ -369,12 +369,12 @@ class AFD:
                 if temp_state != []:
                     temp_state.sort()
                     temp_state = list(dict.fromkeys(temp_state))
-                    print("Valor de estado",temp_state)
+                    # print("Valor de estado",temp_state)
                     
                     if(not(str(temp_state)) in self.all_states):
-                        print("Ingreso al ultimo if")
+                        # print("Ingreso al ultimo if")
                         self.all_states[(str(temp_state))] = 'S'+str(cont_states)
-                        print("Todos los estados",self.all_states)
+                        # print("Todos los estados",self.all_states)
                         self.list_states.append(temp_state)
                         cont_states += 1
                     
@@ -388,31 +388,43 @@ class AFD:
         self.routes = list(dict.fromkeys(self.routes))
 
                 
+    def Simulacion(self):
+        _state = 'S0'
+        _isValid = True
+        for c in self.word:
+            if not(_isValid):
+                break
+            for t in self.routes:
+                if t[0] == _state and t[1] == c:
+                    _state = t[2]
+                    _isValid = True
+                    break
+                else:
+                    _isValid = False
 
-
-    # def get_results(self):
-    #     estados = []
-    #     transicion = []
-    #     for i in self.all_nodes:
-    #         estados.append(i.get_id())
-    #         for j in i.get_transitions():
-    #             transicion.append((i.get_id(),j[0],j[1]))
-        
-    #     simbolos = list(dict.fromkeys(self.alphabet))
-    #     inicio  = self.first_final.get_id()
-    #     final = self.last_final.get_id()
-    #     return estados, simbolos, inicio, final, transicion
+        if(_state in self.states_final):
+            print("""
+            *******************************
+            SI en AFD
+            ********************************
+            """)
+        else:
+            print("""
+            *******************************
+            NO en AFD
+            ********************************
+            """)
 
     #Metodo para procesar la expresion ingresada e iniciar la creacion de nodos y sus transiciones
     def process_expression(self):
         cont = 0
         nodes = []
-        print(self.expression)
+        # print(self.expression)
         operadores = ['.','*',')','(','|']
         # try:
         while cont < len(self.expression):
             #En el caso del | se generan 6 nodos diferentes
-            print("Caracter: ",self.expression[cont])
+            # print("Caracter: ",self.expression[cont])
             if self.expression[cont] == '(':
                 self.operators.append(self.expression[cont])
             elif self.expression[cont] == ')':
@@ -421,12 +433,12 @@ class AFD:
                     if op != '*':
                         val2 = self.values.pop()
                         val1 = self.values.pop()
-                        print('Valor 1: ',val1)
-                        print('Valor 2: ',val2)
+                        # print('Valor 1: ',val1)
+                        # print('Valor 2: ',val2)
                      #   print("La expresion: ",val1+op+val2)
                         parent =  self.operations(op,val1,val2)
                         #self.nodes_or(val1,val2,True)
-                        print("Nodos")
+                        # print("Nodos")
 
                         self.values.append((parent,))##val1+op+val2)
                     #    nodes.append(val1+op+val2)
@@ -445,8 +457,8 @@ class AFD:
                         val2 = self.values.pop()
                         val1 = self.values.pop()
                         op = self.operators.pop()
-                        print('Valor 1: ',val1)
-                        print('Valor 2: ',val2)
+                        # print('Valor 1: ',val1)
+                        # print('Valor 2: ',val2)
                   #      print("La expresion: ",val1+op+val2)
                         parent = self.operations(op,val1,val2)
                         self.values.append((parent,))#val1+op+val2)
@@ -470,20 +482,20 @@ class AFD:
 
 
         while(self.operators):
-            print("ultimo while")
-            print("Valores",self.values)
-            print("Operadores",self.operators)
+            # print("ultimo while")
+            # print("Valores",self.values)
+            # print("Operadores",self.operators)
             val2 = self.values.pop()
             val1 = self.values.pop()
             op = self.operators.pop()
 
-            print('Valor 1: ',val1)
-            print('Valor 2: ',val2)
+            # print('Valor 1: ',val1)
+            # print('Valor 2: ',val2)
             #print("La expresion: ",val1+op+val2)
             self.root = self.operations(op,val1,val2)
             self.values.append((self.root,))#val2+op+val1)
 
-        print("all leaf",self.all_leaf)
+        # print("all leaf",self.all_leaf)
         for e in self.all_leaf:
             print(e.get_id(),", - valor de nodo ->",e.get_value(),'- hijos -> ',e.get_children(),'- valor de hoja -> ',e.get_idValue())
 
@@ -514,18 +526,18 @@ class AFD:
         position = list(self.leaf_values.values()).index('#')
         self.last_state = keys[position]
         
-        pretty(self._infoLeaf)
-        pretty(self.leaf_values)
+        # pretty(self._infoLeaf)
+        # pretty(self.leaf_values)
         self.create_states()
-        pretty(self.all_states)
-        print("Rutas")
-        print(self.routes)
+        # pretty(self.all_states)
+        # print("Rutas")
+        # print(self.routes)
         for element in self.all_states.keys():
             _element = json.loads(element)
             for val in _element:
                 if val == self.last_state:
                     self.states_final.append(self.all_states[element])
-            print("Element",element)            
+            # print("Element",element)            
 
         self.states_final = list(dict.fromkeys(self.states_final))
         #print("Info leafs: ",json.dumps(self._infoLeaf))
@@ -564,3 +576,20 @@ class AFD:
         print("Inicio => ",list(self.all_states.values())[0])
         print("Aceptacion => ",self.states_final)
         print("Transicion => ",self.routes)
+
+
+        _txtalphabet = list(dict.fromkeys(self.alphabet)) 
+        cadena = f'''
+        ============= RESULTADOS DE AFD ==========
+        Estados => {self.all_states.values()}
+        Simbolos => {_txtalphabet}
+        Inicio => {list(self.all_states.values())[0]}
+        Aceptacion => {self.states_final}
+        Transicion => {self.routes}
+        '''
+        # print(cadena)
+        with open('resultados_afd.txt',"w",encoding="utf-8") as f:
+            f.write(cadena)
+        f.close()
+
+        self.Simulacion()
