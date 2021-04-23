@@ -20,6 +20,7 @@ class Lectura():
         self.keywords = {}
         self.tokens = {}
         self.productions = {}
+        self.exceptions = {}
 
     def readCharacters(self):
         flag = False #Para indicar que encontro CHARACTER
@@ -50,7 +51,8 @@ class Lectura():
                         if valid and not(error):
                             index = expresion_final.find('=')
                             key = expresion_final[0:index].strip()
-                            value = expresion_final[index+1:-1].strip().replace('"','').replace('.','')
+                            value = expresion_final[index+1:-1].strip().replace('"','')
+                            value = value[:-1]
                             self.characters[key] = value
                         elif not(valid) and not(error):
                             print("Pudo encontrar un encabezado")
@@ -144,18 +146,35 @@ class Lectura():
         flag = False #Para indicar que encontro TOKENS
         with open(self.filename,'r') as f:
             lines = (line.rstrip() for line in f)
+            expresion_final = ""
+            fin_expr = False
             for line in lines:
-                if flag and len(line.replace(" ","")) > 0:
-                    valid,error = self.Validator(line,[3])
-                    print("Line->",line)
+                if flag:
+                    if line != "\n":
+                        line = line.lstrip()
+                        expresion_final += line
+                        # expresion_final = " ".join(expresion_final.split())
+                        if expresion_final.endswith("."):
+                            fin_expr = True
+                        else:
+                            keys, error = self.Validator(expresion_final,[2])
+                            if(keys):
+                                print("Encontro un encabezado")
+                                flag = False
+                                break
+
+                if fin_expr:
+                    valid,error = self.Validator(expresion_final,[3])
+                    print("Line->",expresion_final)
                     if valid and not(error):
-                        index = line.find('=')
-                        key = line[0:index].strip()
-                        value = line[index+1:-1].strip().replace('"','').replace('.','')
+                        index = expresion_final.find('=')
+                        key = expresion_final[0:index].strip()
+                        value = expresion_final[index+1:-1].strip()
+                        value = value[:-1]
                         self.tokens[key] = value
                     elif not(valid) and not(error):
                         print("Pudo encontrar un encabezado")
-                        keys, error = self.Validator(line,[2])
+                        keys, error = self.Validator(expresion_final,[2])
                         print("Keys",keys)
                         if(keys):
                             print("Ingreso al if")
@@ -166,10 +185,25 @@ class Lectura():
                     elif error:
                         print("La expresion no es valida")
 
+                    expresion_final = ""
+                    fin_expr = False
+
                 if 'TOKENS' in line:
                     flag = True
+                    expresion_final = ""
 
         print("Tokens",self.tokens)
+
+    # Metodo que obtiene los | de los characters y tambien agrega los parentesis
+    def transformCharacters(self):
+        for key,value in self.characters.items():
+            temp = "("
+            cont = 0
+            for letter in value:
+                temp += letter+'|' if cont < len(value)-1 else letter
+                cont += 1
+            
+            self.characters[key] = temp+")"
                 
     def tokenEvaluator(self):
         print("Evaluando los tokens")
@@ -182,7 +216,19 @@ class Lectura():
                 self.tokens[keyToken] = self.tokens[keyToken].replace(key,self.characters[key])
 
         print("Tokens -> ",self.tokens)
+        #Validar que tenga los keywords para enviar la señal
 
+        for keyToken,value in self.tokens.items():
+            if str(value).find('EXCEPT KEYWORDS') > -1:
+                self.exceptions[keyToken] = True
+                self.tokens[keyToken] = self.tokens[keyToken].replace(" EXCEPT KEYWORDS","")
+            else:
+                self.exceptions[keyToken] = False
+
+        print("Exceptions ",self.exceptions)
+        print("Tokens sin keywords -> ",self.tokens)
+
+        #Ahora ya transforma las expresiones regulares
 
 
         
@@ -234,4 +280,5 @@ if __name__ == "__main__":
     print("=======================================================")
     lec.readKeywords()
     lec.readTokens()
+    lec.transformCharacters()
     lec.tokenEvaluator()
