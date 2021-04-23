@@ -11,6 +11,7 @@ import re
 # hacer los cambios en los Characters
 # Ya funciona + o -  en characters, ahora ya puedes ver lo los tokens
 # Ver el regex del TokenDecl
+# Cambiar validacion de char!!! para que tenga chr()
 
 class Lectura():
     def __init__(self,_filename):
@@ -24,30 +25,52 @@ class Lectura():
         flag = False #Para indicar que encontro CHARACTER
         with open(self.filename,'r') as f:
             lines = (line.rstrip() for line in f)
+            expresion_final = ""
+            fin_expr = False
             for line in lines:
-                if flag and len(line.replace(" ","")) > 0:
-                    valid,error = self.Validator(line,[0])
-                    print("Line->",line)
-                    if valid and not(error):
-                        index = line.find('=')
-                        key = line[0:index].strip()
-                        value = line[index+1:-1].strip().replace('"','').replace('.','')
-                        self.characters[key] = value
-                    elif not(valid) and not(error):
-                        print("Pudo encontrar un encabezado")
-                        keys, error = self.Validator(line,[2])
-                        print("Keys",keys)
-                        if(keys):
-                            print("Ingreso al if")
-                            flag = False
-                            break
+
+                if flag:
+                    if line != "\n":
+                        line = line.lstrip()
+                        expresion_final += line
+                        # expresion_final = " ".join(expresion_final.split())
+                        if expresion_final.endswith("."):
+                            fin_expr = True
                         else:
-                            print("Encontro una expresion no valida")
-                    elif error:
-                        print("La expresion no es valida")
+                            keys, error = self.Validator(expresion_final,[2])
+                            if(keys):
+                                print("Encontro un encabezado")
+                                flag = False
+                                break
+
+                
+                    if fin_expr:
+                        valid,error = self.Validator(expresion_final,[0])
+                        print("Line->",expresion_final)
+                        if valid and not(error):
+                            index = expresion_final.find('=')
+                            key = expresion_final[0:index].strip()
+                            value = expresion_final[index+1:-1].strip().replace('"','').replace('.','')
+                            self.characters[key] = value
+                        elif not(valid) and not(error):
+                            print("Pudo encontrar un encabezado")
+                            keys, error = self.Validator(expresion_final,[2])
+                            print("Keys",keys)
+                            if(keys):
+                                print("Ingreso al if")
+                                flag = False
+                                break
+                            else:
+                                print("Encontro una expresion no valida")
+                        elif error:
+                            print("La expresion no es valida")
+
+                        expresion_final = ""
+                        fin_expr = False
 
                 if 'CHARACTERS' in line:
                     flag = True
+                    expresion_final = ""
         
         #Para trabajar con el mayor len de llave al momento de hacer sustituciones
         for key in sorted(self.characters, key=len, reverse=True):
@@ -172,7 +195,7 @@ class Lectura():
             res = None
             #Regla que valida SetDecl
             if rule == 0:
-                regex = r'[a-zA-Z].[a-zA-Z0-9]* = "?\w*"?([+|-]"?\w*"?)*\.'
+                regex = r'[a-zA-Z].[a-zA-Z0-9]* =[\s]*"?[\W|\w]*"?[\s]*([+|-]"?[\W|\w]*"?)*\.'
                 res = re.match(regex,expr)
                 checked = res
                 _error = False
@@ -194,7 +217,7 @@ class Lectura():
             
             #Regla que valida si esta leyendo un token
             elif rule == 3:
-                regex = r'[a-zA-Z].[a-zA-Z0-9]* = (.*).'
+                regex = r'[a-zA-Z].[a-zA-Z0-9]* = ["?\[\W|\w]*"?|\(\[\W|\w]*\)|\[\[\W|\w]*\]|\{[\W|\w]*\}|\s*]*\.' # ["?\w*"?|\(\w*\)|\[\w*\]|\{\w*\}|\s]*\.    (FUNCIONA PARCIALMENTE)
                 res = re.match(regex,expr)
                 checked = res
                 _error = False
