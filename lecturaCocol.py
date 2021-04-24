@@ -9,9 +9,8 @@ import re
 #========= Pendientes
 # Considerar tambien que no es buena idea borrar las "" debido que pueden ser utiles al momento de eliminar
 # hacer los cambios en los Characters
-# Ya funciona + o -  en characters, ahora ya puedes ver lo los tokens
 # Ver el regex del TokenDecl
-# Cambiar validacion de char!!! para que tenga chr()
+# Arreglar simbolos de + y -
 
 class Lectura():
     def __init__(self,_filename):
@@ -31,7 +30,7 @@ class Lectura():
             for line in lines:
 
                 if flag:
-                    if line != "\n":
+                    if line != "\n": #Si no es una linea vacia
                         line = line.lstrip()
                         expresion_final += line
                         # expresion_final = " ".join(expresion_final.split())
@@ -45,21 +44,17 @@ class Lectura():
                                 break
 
                 
-                    if fin_expr:
+                    if fin_expr:# Si encuentra una expresion que ya cumpla con el punto y todo
                         valid,error = self.Validator(expresion_final,[0])
-                        print("Line->",expresion_final)
                         if valid and not(error):
                             index = expresion_final.find('=')
                             key = expresion_final[0:index].strip()
                             value = expresion_final[index+1:-1].strip().replace('"','')
-                            value = value[:-1]
+                            # value = value[:-1]
                             self.characters[key] = value
                         elif not(valid) and not(error):
-                            print("Pudo encontrar un encabezado")
                             keys, error = self.Validator(expresion_final,[2])
-                            print("Keys",keys)
                             if(keys):
-                                print("Ingreso al if")
                                 flag = False
                                 break
                             else:
@@ -74,10 +69,19 @@ class Lectura():
                     flag = True
                     expresion_final = ""
         
+        print('Characters original->',self.characters)
+        #Para manejar los chars
+        for key,value in self.characters.items():
+            self.characters[key] = self.charValidator(value)
+
+        print("Characters luego de manejar chars",self.characters)
+
         #Para trabajar con el mayor len de llave al momento de hacer sustituciones
         for key in sorted(self.characters, key=len, reverse=True):
             for keyValue,value in self.characters.items():
                 self.characters[keyValue] = self.characters[keyValue].replace(key,self.characters[key])
+
+        print("Caracteres sustituidos: ",self.characters)
         
         #Reemplazo de + o -, para unir o eliminar caracteres
         for keyValue,value in self.characters.items():
@@ -93,11 +97,9 @@ class Lectura():
                 if next_index > -1:
                     second_element = str(self.characters[keyValue])[temp_index+1:next_index]
                     cont_word = str(self.characters[keyValue])[next_index:]
-                    # print("cont_word->",cont_word)
                     new_word = first_element.translate({ord(i): None for i in second_element})
                     self.characters[keyValue] = new_word+cont_word
                 else:
-                    # print("Entro al else")
                     second_element = str(self.characters[keyValue])[temp_index+1:]
                     new_word = first_element.translate({ord(i): None for i in second_element})
                     self.characters[keyValue] = new_word
@@ -170,7 +172,7 @@ class Lectura():
                         index = expresion_final.find('=')
                         key = expresion_final[0:index].strip()
                         value = expresion_final[index+1:-1].strip()
-                        value = value[:-1]
+                        # value = value[:-1]
                         self.tokens[key] = value
                     elif not(valid) and not(error):
                         print("Pudo encontrar un encabezado")
@@ -229,7 +231,64 @@ class Lectura():
         print("Tokens sin keywords -> ",self.tokens)
 
         #Ahora ya transforma las expresiones regulares
+        #Recorrer cada letra, y si encuentra la expresion la cambia
+        for key,values  in self.tokens.items():
+            word = str(values)
+            new_word = ""
+            _notString = True
+            index = 0
+            for letter in word:
+                if letter == '"':
+                    _notString = not(_notString)
+                if _notString and letter == "{":
+                    print("Ingreso al primer if")
+                    word = word[:index]+'('+word[index+1:]
+                if _notString and letter == "}":
+                    print("Ingreso al segundo if")
+                    word += word[:index]+')*'+word[index+1:]
+                index += 1
+            
+            self.tokens[key] = word
 
+        print("Token ya con cerradura -> ",self.tokens)
+            
+    #Genera los caracteres de c1 a c2
+    def char_range(self,c1, c2):
+        for c in range(ord(c1), ord(c2)+1):
+            yield chr(c)
+
+    #Valida la expresion tenga char o ..
+    def charValidator(self, expresion):
+        #Hay que validar si la expresion tiene chars
+        respuesta = ""
+        #Formato de chars 'A' .. 'Z' | CHR(0) .. CHR(50)
+        if expresion.find("..") > -1:
+            index = expresion.find("..")
+            primer = expresion[:index].rstrip().lstrip()
+            segundo = expresion[index+2:].rstrip().lstrip()
+            val1 = chr(int(primer[4:-1])) if primer.find('CHR(') == 0 else primer.replace("'","")
+            val2 = chr(int(segundo[4:-1])) if segundo.find('CHR(') == 0 else segundo.replace("'","")
+            for x in self.char_range(val1,val2):
+                respuesta += x
+
+        else:
+            #En caso solo haya que revisar y reemplazar CHR()
+            if expresion.find('CHR(') > -1:
+                temp = expresion
+                while temp.find('CHR(') > -1:
+                    inicio = temp.find('CHR(')
+                    final = temp.find(')',inicio)
+                    valor = chr(int(temp[inicio+4:final]))
+                    temp = temp[:inicio]+valor+temp[final+1:]
+                respuesta = temp
+            else:
+                #En caso no encuentre ningun CHR() o '..'
+                respuesta = expresion
+
+        return respuesta
+            
+
+            
 
         
 
@@ -241,7 +300,7 @@ class Lectura():
             res = None
             #Regla que valida SetDecl
             if rule == 0:
-                regex = r'[a-zA-Z].[a-zA-Z0-9]* =[\s]*"?[\W|\w]*"?[\s]*([+|-]"?[\W|\w]*"?)*\.'
+                regex = r'[a-zA-Z].[a-zA-Z0-9]*[\s]?=[\s]*"?[\W|\w]*"?[\s]*([+|-]"?[\W|\w]*"?)*\.'
                 res = re.match(regex,expr)
                 checked = res
                 _error = False
@@ -275,10 +334,11 @@ class Lectura():
 
 
 if __name__ == "__main__":
-    lec = Lectura('examplecoco.txt')
+    lec = Lectura('examplecoco.atg')
+    # print("Caracter:",lec.charValidator('eol+tab'))
     lec.readCharacters()
-    print("=======================================================")
-    lec.readKeywords()
-    lec.readTokens()
-    lec.transformCharacters()
-    lec.tokenEvaluator()
+    # print("=======================================================")
+    # lec.readKeywords()
+    # lec.readTokens()
+    # lec.transformCharacters()
+    # lec.tokenEvaluator()
