@@ -49,7 +49,7 @@ class Lectura():
                         if valid and not(error):
                             index = expresion_final.find('=')
                             key = expresion_final[0:index].strip()
-                            value = expresion_final[index+1:-1].strip().replace('"','')
+                            value = expresion_final[index+1:-1].strip() #quitaste el remove de este simbolo ""
                             # value = value[:-1]
                             self.characters[key] = value
                         elif not(valid) and not(error):
@@ -74,7 +74,12 @@ class Lectura():
         for key,value in self.characters.items():
             self.characters[key] = self.charValidator(value)
 
+        for key,value in self.characters.items():
+            self.characters[key] = self.anyValidator(value)
+
         print("Characters luego de manejar chars",self.characters)
+
+        
 
         #Para trabajar con el mayor len de llave al momento de hacer sustituciones
         for key in sorted(self.characters, key=len, reverse=True):
@@ -85,30 +90,150 @@ class Lectura():
         
         #Reemplazo de + o -, para unir o eliminar caracteres
         for keyValue,value in self.characters.items():
-            while self.characters[keyValue].find('-') > -1:
-                temp_index = self.characters[keyValue].find('-')
-                if str(self.characters[keyValue]).find('+',temp_index+1) > -1:
-                    next_index = str(self.characters[keyValue]).find('+',temp_index+1)
-                elif str(self.characters[keyValue]).find('-',temp_index+1) > -1:
-                    next_index = str(self.characters[keyValue]).find('-',temp_index+1)
-                else:
-                    next_index = -1
-                first_element = str(self.characters[keyValue])[:temp_index]
-                if next_index > -1:
-                    second_element = str(self.characters[keyValue])[temp_index+1:next_index]
-                    cont_word = str(self.characters[keyValue])[next_index:]
-                    new_word = first_element.translate({ord(i): None for i in second_element})
-                    self.characters[keyValue] = new_word+cont_word
-                else:
-                    second_element = str(self.characters[keyValue])[temp_index+1:]
-                    new_word = first_element.translate({ord(i): None for i in second_element})
-                    self.characters[keyValue] = new_word
+
+            check = True #Termino de recorrer la palabra
+            flag = False #Para indicar si esta en un string o no
+            cont = 0 #Contador de digito
+            respuesta = ""
+            primera = False
+            primer = ""
+            segunda = ""
+            operador = ""
+            calculo = False
+
+            if value.find("+") > -1 or value.find("-") > -1: #Si no posee estos simbolos no vale la pena hacer cambios
+                while cont < len(value): #Mientras siga revisando
+                    if not(primera): #Encontro la primera palabra, entonces esta es la que hay que calcular
+                        if value[cont] == '"':
+                            flag = not(flag)
+
+                        if flag: #Es la primera palabra
+                            primer += value[cont]
+                        else: #Ya termino de guardar la primera palabra
+                            respuesta = primer[1:]
+                            primera = True
+
+                    else: #Ya guardo la primera entonces ahora ya puedo calcular lo que vaya encontrando
+                        if value[cont] == '"':
+                            flag = not(flag)
+
+                        if (not(flag) and value[cont] == "+") or (not(flag) and value[cont] == "-"): #Si encuentra un operador
+                            operador = value[cont]
+                        else:
+                            if flag: #Guardando el segundo valor
+                                segunda += value[cont]
+                            else: #Ya realizara el calculo
+                                if operador == "+" and not(flag): #Si el operador es suma
+                                    segunda = segunda[1:]
+                                    respuesta = respuesta+segunda
+                                    calculo = True
+                                elif operador == "-" and not(flag): #Si el operador es resta
+                                    segunda = segunda[1:]
+                                    respuesta = respuesta.translate({ord(i): None for i in segunda})
+                                    calculo = True
+
+                                if calculo:
+                                    op = ""
+                                    segunda = ""
+
+
+
+
+                    cont += 1
+                
+                self.characters[keyValue] = '"'+respuesta+'"'
+
+
+
+
+            ### INTENTO 3 CON  findall
+            # sentence = value
+            # newValue = ""
+            # cont = 0
+            # res = ""
+            # contString = 0
+            # notString = True
+            # check = True
+
+            # _wordsString = re.findall(r'\"(.*?)\"',sentence)
+            # if len(_wordsString) > 1: #Para indicar si solamente es una palabra o si hay operaciones
+            #     while check:
+            #         primer =  _wordsString[0]
+            #         op = sentence[len(primer)+3] if cont == 0 else sentence[len(primer)+1]
+            #         segundo = _wordsString[1]
+            #         if op == '+':
+            #             res = primer+segundo
+            #         elif op == '-':
+            #             res = primer.translate({ord(i): None for i in segundo})
+                    
+            #         if len(_wordsString) == 2: #Si ya solo quedan dos valores
+            #             sentence = '"'+res+'"'
+            #             check = False
+            #         else:
+            #             cont = len(primer)+len(segundo)+5
+            #             sentence = '"'+res+sentence[cont:]
+            #             _wordsString = re.findall(r'\"(.*?)\"',sentence)
+                    
+            #         cont += 1
+
+            #     self.characters[keyValue] = sentence
+
+            #==============================================================================
+
+            # for letter in sentence:
+            #     if letter == '"':
+            #         notString = not(notString)
+            #     if notString and letter == '-':
+            #         temp_index = sentence.find('-',cont) 
+            #         if str(sentence).find('+',temp_index+1) > -1:
+            #             next_index = str(sentence).find('+',temp_index+1)
+            #         elif str(sentence).find('-',temp_index+1) > -1:
+            #             next_index = str(sentence).find('-',temp_index+1)
+            #         else:
+            #             next_index = -1
+            #         first_element = sentence[:temp_index]
+            #         if next_index > -1:
+            #             second_element = str(sentence)[temp_index+1:next_index]
+            #             cont_word = str(sentence)[next_index:]
+            #             new_word = first_element.translate({ord(i): None for i in second_element})
+            #             sentence = new_word+cont_word
+            #         else:
+            #             second_element = str(sentence)[temp_index+1:]
+            #             new_word = first_element.translate({ord(i): None for i in second_element})
+            #             sentence = new_word
+            #TE QUEDASTE AQUI!!! ESTAS ARREGLANDO LO DEL -  PARA QUE NO SE CUMPLA SI ESTA DENTRO DE ""
+
+            #     cont += 1
+
+            # self.characters[keyValue] = sentence
+
+            
+            # esto funcionaba antes
+            
+            # while self.characters[keyValue].find('-') > -1:
+            #     temp_index = self.characters[keyValue].find('-')
+            #     if str(self.characters[keyValue]).find('+',temp_index+1) > -1:
+            #         next_index = str(self.characters[keyValue]).find('+',temp_index+1)
+            #     elif str(self.characters[keyValue]).find('-',temp_index+1) > -1:
+            #         next_index = str(self.characters[keyValue]).find('-',temp_index+1)
+            #     else:
+            #         next_index = -1
+            #     first_element = str(self.characters[keyValue])[:temp_index]
+            #     if next_index > -1:
+            #         second_element = str(self.characters[keyValue])[temp_index+1:next_index]
+            #         cont_word = str(self.characters[keyValue])[next_index:]
+            #         new_word = first_element.translate({ord(i): None for i in second_element})
+            #         self.characters[keyValue] = new_word+cont_word
+            #     else:
+            #         second_element = str(self.characters[keyValue])[temp_index+1:]
+            #         new_word = first_element.translate({ord(i): None for i in second_element})
+            #         self.characters[keyValue] = new_word
 
                 # print("New word -> "+self.characters[keyValue])
 
                 # print("Temp index -> ",temp_index,"; next index-> ",next_index," f_element-> ",first_element,"; s_element->",second_element)
 
-            self.characters[keyValue] = self.characters[keyValue].replace("+","")
+            # self.characters[keyValue] = self.characters[keyValue].replace("+","")
         
 
         print("Characters",self.characters)
@@ -260,7 +385,7 @@ class Lectura():
     #Valida la expresion tenga char o ..
     def charValidator(self, expresion):
         #Hay que validar si la expresion tiene chars
-        respuesta = ""
+        respuesta = ''
         #Formato de chars 'A' .. 'Z' | CHR(0) .. CHR(50)
         if expresion.find("..") > -1:
             index = expresion.find("..")
@@ -270,7 +395,7 @@ class Lectura():
             val2 = chr(int(segundo[4:-1])) if segundo.find('CHR(') == 0 else segundo.replace("'","")
             for x in self.char_range(val1,val2):
                 respuesta += x
-
+            respuesta = '"'+respuesta+'"'
         else:
             #En caso solo haya que revisar y reemplazar CHR()
             if expresion.find('CHR(') > -1:
@@ -280,13 +405,36 @@ class Lectura():
                     final = temp.find(')',inicio)
                     valor = chr(int(temp[inicio+4:final]))
                     temp = temp[:inicio]+valor+temp[final+1:]
-                respuesta = temp
+                respuesta = '"'+temp+'"' if temp != '"' else temp
+            
+            # En caso que haya que revisar si hay 
+            # if
             else:
                 #En caso no encuentre ningun CHR() o '..'
                 respuesta = expresion
+                
+        
+            # _wordsString = re.findall(r"\'(.*?)\'",respuesta)
+
+
 
         return respuesta
             
+    def anyValidator(self,expresion):
+        respuesta = ""
+        final = ""
+        if expresion.find('ANY') > -1:
+            index = expresion.find("ANY")
+            primer = expresion[:index].rstrip().lstrip()
+            segundo = expresion[index+3:].rstrip().lstrip()
+            for x in self.char_range(chr(0),chr(255)):
+                respuesta += x
+            final = primer+'"'+respuesta+'"'+segundo
+        else:
+            final = expresion
+
+        return final
+
 
             
 
