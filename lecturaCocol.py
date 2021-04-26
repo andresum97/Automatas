@@ -25,7 +25,7 @@ class Lectura():
 
     def readCharacters(self):
         flag = False #Para indicar que encontro CHARACTER
-        with open(self.filename,'r') as f:
+        with open(self.filename,'r',encoding='utf-8') as f:
             lines = (line.rstrip() for line in f)
             expresion_final = ""
             fin_expr = False
@@ -72,11 +72,11 @@ class Lectura():
                     expresion_final = ""
         
 
-        print('Characters original->',self.characters)
+        # print('Characters original->',self.characters)
         for key,value in self.characters.items():
             self.characters[key] = self.comillasValidator(value) 
 
-        print("Comillas cambiadas ",self.characters)
+        # print("Comillas cambiadas ",self.characters)
         #Para manejar los chars
         for key,value in self.characters.items():
             self.characters[key] = self.charValidator(value)
@@ -84,7 +84,7 @@ class Lectura():
         for key,value in self.characters.items():
             self.characters[key] = self.anyValidator(value)
 
-        print("Characters luego de manejar chars",self.characters)
+        # print("Characters luego de manejar chars",self.characters)
 
         
 
@@ -93,7 +93,7 @@ class Lectura():
             for keyValue,value in self.characters.items():
                 self.characters[keyValue] = self.characters[keyValue].replace(key,self.characters[key])
 
-        print("Caracteres sustituidos: ",self.characters)
+        # print("Caracteres sustituidos: ",self.characters)
         
         #Reemplazo de + o -, para unir o eliminar caracteres
         for keyValue,value in self.characters.items():
@@ -252,18 +252,18 @@ class Lectura():
             for line in lines:
                 if flag and len(line.replace(" ","")) > 0:
                     valid,error = self.Validator(line,[1])
-                    print("Line->",line)
+                    # print("Line->",line)
                     if valid and not(error):
                         index = line.find('=')
                         key = line[0:index].strip()
                         value = line[index+1:-1].strip().replace('"','').replace('.','')
                         self.keywords[key] = value
                     elif not(valid) and not(error):
-                        print("Pudo encontrar un encabezado")
+                        # print("Pudo encontrar un encabezado")
                         keys, error = self.Validator(line,[2])
-                        print("Keys",keys)
+                        # print("Keys",keys)
                         if(keys):
-                            print("Ingreso al if")
+                            # print("Ingreso al if")
                             flag = False
                             break
                         else:
@@ -274,7 +274,7 @@ class Lectura():
                 if 'KEYWORDS' in line:
                     flag = True
 
-        print("Keyboards",self.keywords)
+        print("Keywords",self.keywords)
 
     def readTokens(self):
         flag = False #Para indicar que encontro TOKENS
@@ -293,13 +293,13 @@ class Lectura():
                         else:
                             keys, error = self.Validator(expresion_final,[2])
                             if(keys):
-                                print("Encontro un encabezado")
+                                # print("Encontro un encabezado")
                                 flag = False
                                 break
 
                 if fin_expr:
                     valid,error = self.Validator(expresion_final,[3])
-                    print("Line->",expresion_final)
+                    # print("Line->",expresion_final)
                     if valid and not(error):
                         index = expresion_final.find('=')
                         key = expresion_final[0:index].strip()
@@ -307,11 +307,11 @@ class Lectura():
                         # value = value[:-1]
                         self.tokens[key] = value
                     elif not(valid) and not(error):
-                        print("Pudo encontrar un encabezado")
+                        # print("Pudo encontrar un encabezado")
                         keys, error = self.Validator(expresion_final,[2])
-                        print("Keys",keys)
+                        # print("Keys",keys)
                         if(keys):
-                            print("Ingreso al if")
+                            # print("Ingreso al if")
                             flag = False
                             break
                         else:
@@ -331,16 +331,17 @@ class Lectura():
     # Metodo que obtiene los | de los characters y tambien agrega los parentesis
     def transformCharacters(self):
         for key,value in self.characters.items():
-            temp = "("
+            temp = chr(1000)+"("
             cont = 0
-            for letter in value:
-                temp += letter+'|' if cont < len(value)-1 else letter
+            expr = value.replace(chr(1000),'')
+            for letter in expr:
+                temp += letter+'|' if cont < len(expr)-1 else letter
                 cont += 1
             
-            self.characters[key] = temp+")"
+            self.characters[key] = temp+")"+chr(1000)
                 
     def tokenEvaluator(self):
-        print("Evaluando los tokens")
+        print("======= Evaluando los tokens =========")
         #Se realiza la sustitucion de characters en tokens
 
         #Para trabajar con el mayor len de llave al momento de hacer sustituciones
@@ -367,20 +368,34 @@ class Lectura():
         for key,values  in self.tokens.items():
             word = str(values)
             new_word = ""
-            _notString = True
-            index = 0
-            for letter in word:
-                if letter == '"':
+            _notString = False
+            cont = 0
+            while cont < len(word): 
+                letter = word[cont]
+                if letter == chr(1000):
                     _notString = not(_notString)
-                if _notString and letter == "{":
-                    print("Ingreso al primer if")
-                    word = word[:index]+'('+word[index+1:]
-                if _notString and letter == "}":
-                    print("Ingreso al segundo if")
-                    word += word[:index]+')*'+word[index+1:]
-                index += 1
+                
+                if _notString:
+                    new_word += letter
+                else:
+                    if letter == "{":
+                        new_word += '('
+                        # print("Ingreso al primer if")
+                        # word = word[:index]+'('+word[index+1:]
+                    elif letter == "}":
+                        new_word += ')*'
+                    elif letter == '[':
+                        new_word += '('
+                    elif letter == ']':
+                        new_word += ')?'
+                    else:
+                        new_word += letter
+                    #     # print("Ingreso al segundo if")
+                    #     word += word[:index]+')*'+word[index+1:]
+                    # index += 1
+                cont += 1
             
-            self.tokens[key] = word
+            self.tokens[key] = new_word.replace(chr(1000),'')
 
         print("Token ya con cerradura -> ",self.tokens)
             
@@ -514,7 +529,7 @@ if __name__ == "__main__":
     # print("Caracter:",lec.charValidator('eol+tab'))
     lec.readCharacters()
     # print("=======================================================")
-    # lec.readKeywords()
-    # lec.readTokens()
-    # lec.transformCharacters()
-    # lec.tokenEvaluator()
+    lec.readKeywords()
+    lec.readTokens()
+    lec.transformCharacters()
+    lec.tokenEvaluator()
