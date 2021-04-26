@@ -11,6 +11,8 @@ import re
 # hacer los cambios en los Characters
 # Ver el regex del TokenDecl
 # Arreglar simbolos de + y -
+# Quitar del Any las comillas y la apostrofe. 
+# Preguntar lo de reemplazar o hacer el cambio
 
 class Lectura():
     def __init__(self,_filename):
@@ -69,7 +71,12 @@ class Lectura():
                     flag = True
                     expresion_final = ""
         
+
         print('Characters original->',self.characters)
+        for key,value in self.characters.items():
+            self.characters[key] = self.comillasValidator(value) 
+
+        print("Comillas cambiadas ",self.characters)
         #Para manejar los chars
         for key,value in self.characters.items():
             self.characters[key] = self.charValidator(value)
@@ -104,7 +111,7 @@ class Lectura():
             if value.find("+") > -1 or value.find("-") > -1: #Si no posee estos simbolos no vale la pena hacer cambios
                 while cont < len(value): #Mientras siga revisando
                     if not(primera): #Encontro la primera palabra, entonces esta es la que hay que calcular
-                        if value[cont] == '"':
+                        if value[cont] == chr(1000):
                             flag = not(flag)
 
                         if flag: #Es la primera palabra
@@ -114,7 +121,7 @@ class Lectura():
                             primera = True
 
                     else: #Ya guardo la primera entonces ahora ya puedo calcular lo que vaya encontrando
-                        if value[cont] == '"':
+                        if value[cont] == chr(1000):
                             flag = not(flag)
 
                         if (not(flag) and value[cont] == "+") or (not(flag) and value[cont] == "-"): #Si encuentra un operador
@@ -141,7 +148,7 @@ class Lectura():
 
                     cont += 1
                 
-                self.characters[keyValue] = '"'+respuesta+'"'
+                self.characters[keyValue] = chr(1000)+respuesta+chr(1000)
 
 
 
@@ -386,6 +393,7 @@ class Lectura():
     def charValidator(self, expresion):
         #Hay que validar si la expresion tiene chars
         respuesta = ''
+        temp = ''
         #Formato de chars 'A' .. 'Z' | CHR(0) .. CHR(50)
         if expresion.find("..") > -1:
             index = expresion.find("..")
@@ -395,25 +403,35 @@ class Lectura():
             val2 = chr(int(segundo[4:-1])) if segundo.find('CHR(') == 0 else segundo.replace("'","")
             for x in self.char_range(val1,val2):
                 respuesta += x
-            respuesta = '"'+respuesta+'"'
+            respuesta = chr(1000)+respuesta+chr(1000)
         else:
+            for letter in expresion:
+                if letter == "'":
+                    temp += chr(1000)
+                else:
+                    temp += letter
+
+            respuesta = temp
             #En caso solo haya que revisar y reemplazar CHR()
-            if expresion.find('CHR(') > -1:
-                temp = expresion
+            if respuesta.find('CHR(') > -1:
+                temp = respuesta
                 while temp.find('CHR(') > -1:
                     inicio = temp.find('CHR(')
                     final = temp.find(')',inicio)
                     valor = chr(int(temp[inicio+4:final]))
-                    temp = temp[:inicio]+valor+temp[final+1:]
-                respuesta = '"'+temp+'"' if temp != '"' else temp
-            
-            # En caso que haya que revisar si hay 
-            # if
-            else:
-                #En caso no encuentre ningun CHR() o '..'
-                respuesta = expresion
-                
-        
+                    temp = temp[:inicio]+chr(1000)+valor+chr(1000)+temp[final+1:]
+                respuesta = temp #if temp != '"' else temp
+            # else:
+            #     #En caso no encuentre ningun CHR() o '..'
+            #     respuesta = expresion
+
+        # for letter in respuesta:
+        #     if letter == "'":
+        #         temp += chr(1000)
+        #     else:
+        #         temp += letter
+        # respuesta = temp
+
             # _wordsString = re.findall(r"\'(.*?)\'",respuesta)
 
 
@@ -429,12 +447,22 @@ class Lectura():
             segundo = expresion[index+3:].rstrip().lstrip()
             for x in self.char_range(chr(0),chr(255)):
                 respuesta += x
-            final = primer+'"'+respuesta+'"'+segundo
+            final = primer+chr(1000)+respuesta+chr(1000)+segundo
         else:
             final = expresion
 
         return final
 
+
+    def comillasValidator(self,expresion):
+        respuesta = ""
+        for letter in expresion:
+            if letter == '"':
+                respuesta += chr(1000) #Caracter especial para dividir palabras
+            else:
+                respuesta += letter
+
+        return respuesta
 
             
 
