@@ -6,13 +6,27 @@ import re
 # 2: Es un encabezado
 # 3: TokenDecl = ident ['='TokenExpr]["EXCEPT KEYWORDS"] '.'.
 
+
+#=============== CAMBIO PARA AUTOMATAS =========================
+# '('  parentesis inicial ->   CHR(706) = '˂'
+# ')'  parentesis final -> CHR(707) = '˃'
+# '*'  cerradura kleene -> CHR(708) = '˄'
+# '|'  pipe de OR -> CHR(741) = '˥'
+# '?'  interrogacion -> CHR(709) = '˅'
+# '.'  concatenacion -> CHR(765) = '˽'
+# '+'  agregar otra cerradura -> CHR(931) = 'Σ'
+# '#'  signo de finalizacion de exp -> CHR(920) = 'Θ'
+
 #========= Pendientes
-# Considerar tambien que no es buena idea borrar las "" debido que pueden ser utiles al momento de eliminar
 # hacer los cambios en los Characters
 # Ver el regex del TokenDecl
-# Arreglar simbolos de + y -
-# Quitar del Any las comillas y la apostrofe. 
-# Preguntar lo de reemplazar o hacer el cambio
+# El + y - no funcionan en el DFA! pensar en un reemplazo, al igual que con los otros caracteres especiales
+# No funcionan las \t y los caracteres de espacio. En el DFA
+# Probar los demas ATG
+# El ANY tiene problemas con los otros signos. Puede arruinar las cosas en el DFA
+# los caracteres que aparecen en la expresion regular, como parentesis, pueden llegar a ocasionar problemas
+
+
 
 class Lectura():
     def __init__(self,_filename):
@@ -22,6 +36,7 @@ class Lectura():
         self.tokens = {}
         self.productions = {}
         self.exceptions = {}
+        self.final_expresion = ""
 
     def readCharacters(self):
         flag = False #Para indicar que encontro CHARACTER
@@ -72,11 +87,11 @@ class Lectura():
                     expresion_final = ""
         
 
-        # print('Characters original->',self.characters)
+        print('Characters original->',self.characters)
         for key,value in self.characters.items():
             self.characters[key] = self.comillasValidator(value) 
 
-        # print("Comillas cambiadas ",self.characters)
+        print("Comillas cambiadas ",self.characters)
         #Para manejar los chars
         for key,value in self.characters.items():
             self.characters[key] = self.charValidator(value)
@@ -84,7 +99,7 @@ class Lectura():
         for key,value in self.characters.items():
             self.characters[key] = self.anyValidator(value)
 
-        # print("Characters luego de manejar chars",self.characters)
+        print("Characters luego de manejar chars",self.characters)
 
         
 
@@ -398,6 +413,20 @@ class Lectura():
             self.tokens[key] = new_word.replace(chr(1000),'')
 
         print("Token ya con cerradura -> ",self.tokens)
+
+        primero = True
+        #Para devolver el gran string
+        for key,values in self.tokens.items():
+            if primero:
+                new_word = '(('+values+')#)'
+            else:
+                new_word = '|(('+values+')#)'
+            self.final_expresion += new_word
+            primero = False
+
+        print("Final",self.final_expresion)
+
+        return self.final_expresion, self.exceptions
             
     #Genera los caracteres de c1 a c2
     def char_range(self,c1, c2):
@@ -532,4 +561,4 @@ if __name__ == "__main__":
     lec.readKeywords()
     lec.readTokens()
     lec.transformCharacters()
-    lec.tokenEvaluator()
+    expresion_final, excepciones = lec.tokenEvaluator()
