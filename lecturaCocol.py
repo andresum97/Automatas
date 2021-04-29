@@ -370,10 +370,10 @@ class Lectura():
 
         for keyToken,value in self.tokens.items():
             if str(value).find('EXCEPT KEYWORDS') > -1:
-                self.exceptions[keyToken] = True
+                self.exceptions[keyToken] = [value for value in self.keywords.values()]
                 self.tokens[keyToken] = self.tokens[keyToken].replace(" EXCEPT KEYWORDS","")
             else:
-                self.exceptions[keyToken] = False
+                self.exceptions[keyToken] = []
 
         print("Exceptions ",self.exceptions)
         print("Tokens sin keywords -> ",self.tokens)
@@ -424,9 +424,9 @@ class Lectura():
             self.final_expresion += new_word
             primero = False
 
-        print("Final",self.final_expresion)
+        print("Final",repr(self.final_expresion))
 
-        return self.final_expresion, self.exceptions
+        return self.final_expresion, self.exceptions, self.tokens
             
     #Genera los caracteres de c1 a c2
     def char_range(self,c1, c2):
@@ -561,8 +561,7 @@ if __name__ == "__main__":
     lec.readKeywords()
     lec.readTokens()
     lec.transformCharacters()
-    expresion_final, excepciones = lec.tokenEvaluator()
-    palabra = input('Palabra a guardar: ')
+    expresion_final, excepciones, tokens = lec.tokenEvaluator()
 
 
     automata_DFA = """ 
@@ -588,9 +587,15 @@ class AFD:
         self.states_final = []
         self.routes = []
         self.last_state = []
+        self.token = {tokens}
+        self.excepciones = {excepciones}
+        self.verification = {{}}
+        self.states_tokens = {{}}
+        self.states_inverse = {{}}
         self.process_expression()
 
 
+    
     ## Ya estas haciendo aqui el or del arbol
     #Entonces devuelves el valor del id pero pregunta por eso
     #Tambien como manejar ahora los valores
@@ -911,8 +916,9 @@ class AFD:
         self.list_states.append(fp_root)
         _isFinal = False
 
+
+        #Verificacion de estados para tabla final
         for states in self.list_states:
-            # print("Lista de estados",states)
             for letter in self.alphabet:
                 # print("Letra del alfabeto",letter)
                 for val in states:
@@ -944,6 +950,7 @@ class AFD:
                         self.all_states[(str(temp_state))] = 'S'+str(cont_states)
                         # print("Todos los estados",self.all_states)
                         self.list_states.append(temp_state)
+                        # Aqui se asigna a que token corresponde el estado
                         cont_states += 1
                     
                     # if _isFinal:
@@ -954,8 +961,52 @@ class AFD:
                 _isFinal = False
 
         self.routes = list(dict.fromkeys(self.routes))
+  
+    def simulacionTokens(self,word,pos):
+        # s0 = list(self.all_states.values())[0])
+        token = ''
+        match = True
+        check = pos
+        index = pos
+        finalState = []
+        _state = 'S0'
+        _isValid = True
+        _isInSymbol = True
+        res = None
 
-                
+        while match and index < len(word):   
+            # for c in word[index]:
+                # if not(_isValid):
+                #     break
+            # if word[index] not in self.alphabet:
+            #     _isInSymbol = False
+            for t in self.routes:
+                if t[0] == _state and t[1] == word[index]:
+                    _state = t[2]
+                    _isValid = True
+                    break
+                else:
+                    _isValid = False
+
+            if not(_isValid):
+                _state = None
+
+            if _state in self.states_final:
+                check = index
+                finalState = self.states_inverse[_state]
+            
+            if _state == None:
+                match = False
+            
+            index += 1
+        token = word[pos:check + 1]
+        for key,value in self.verification.items():
+            if str(value) in finalState:
+                res = key
+        return token, check+1, res
+        
+
+
     def Simulacion(self):
         _state = 'S0'
         _isValid = True
@@ -975,6 +1026,9 @@ class AFD:
 
         if(_state in self.states_final and _isInSymbol):
             print("******************************* SI es valida la palabra ********************************")
+            for key,value in self.states_tokens.items():
+                if _state in value:
+                    print("Es un "+key)
         else:
             print("******************************* NO es valida la palabra ********************************")
 
@@ -1103,9 +1157,48 @@ class AFD:
         # position = list(self.leaf_values.values()).index('#')
         # self.last_state = keys[position]
         
+
         # pretty(self._infoLeaf)
         # pretty(self.leaf_values)
+    
         self.create_states()
+
+        cont = 0
+        for key in self.token.keys():
+            newKey = self.last_state[cont]
+            self.verification[key] = newKey
+            self.states_tokens[key] = []
+            cont += 1
+
+        print("Verificacion -> ",self.verification)
+        print('Estados ->',self.all_states)
+
+        for key,value in self.all_states.items():
+            self.states_inverse[value] = key
+
+        print('Inverso ',self.states_inverse)
+        #Verificacion si un estado final esta dentro del estado a revisar
+        # print("Lista de estados",states)
+        llave_token = None
+        esEstadoFinal = False
+        for state,val in self.all_states.items():
+            # print("Estado->",state)
+            for keys,value in self.verification.items():
+                # print("Keys->",keys)
+                if str(keys) in state:
+                    # print("En este estado hay un token")
+                    self.states_tokens[value].append(val)
+
+        print("Estados de tokens->",self.states_tokens)
+        # print("States tokens->",self.states_tokens)
+        #  print("Entro aqui y estado final es ->",esEstadoFinal,'Y el estado es ->',str(temp_state))
+        # if esEstadoFinal:
+        #     print("Entro al if")
+        #     self.states_tokens[llave_token].append(self.all_states[(str(temp_state))])
+
+
+
+
         # pretty(self.all_states)
         # print("Rutas")
         # print(self.routes)
@@ -1117,7 +1210,9 @@ class AFD:
             # print("Element",element)            
 
         self.states_final = list(dict.fromkeys(self.states_final))
-        # print("Finales ",self.states_final)
+        print("Finales ",self.states_final)
+
+        
         #print("Info leafs: ",json.dumps(self._infoLeaf))
 
 
@@ -1129,16 +1224,16 @@ class AFD:
 
 
         #============ Area para Graficar ================================
-        f = Digraph('AFD', filename='AFD.gv')
-        f.attr(rankdir='LR', size='8,5')
-        f.attr('node', shape='doublecircle')
-        for finals in self.states_final:
-            f.node(finals)
-        f.attr('node',shape="circle")
-        for element in self.routes:
-            f.edge(element[0],element[2],label=str(element[1]))
+        # f = Digraph('AFD', filename='AFD.gv')
+        # f.attr(rankdir='LR', size='8,5')
+        # f.attr('node', shape='doublecircle')
+        # for finals in self.states_final:
+        #     f.node(finals)
+        # f.attr('node',shape="circle")
+        # for element in self.routes:
+        #     f.edge(element[0],element[2],label=str(element[1]))
 
-        f.view()
+        # f.view()
 
         # # Impresion de resultado
         # estados = []
@@ -1153,7 +1248,23 @@ class AFD:
             pass
 
     
-        self.Simulacion()
+        # self.Simulacion()
+        pos = 0
+        while pos < len(self.word):
+            token, pos, identificador = self.simulacionTokens(self.word,pos)
+            if identificador:
+                acepta = True
+                for exp in self.excepciones[identificador]:
+                    if token == exp:
+                        acepta = False
+                        print('[======',repr(exp),'es el keyword', exp,' ======]')
+                        break
+                if acepta:
+                    print("[====== El simbolo es ",repr(token),' y es de tipo ->',identificador,'======]')
+            else:
+                print('[======',repr(token),'es un simbolo no esperado ======]')
+
+
 
 
 # Metodo que agrega el valor de . a la expresion
@@ -1230,9 +1341,11 @@ def replace(r):
 
     return expr
 
+palabrafile = open("palabras.txt",'r',encoding='utf-8')
+palabra = palabrafile.read()#input('Palabra a guardar: ')
 
 expression = '{expresion_regular}'
-word = '{palabra}'
+word = palabra
 
 res = replace(expression)
 res_final = add_concat(res)
@@ -1244,7 +1357,7 @@ afd = AFD(res_final,word)
 # except:
 #     print("La cadena ingresa no es válida")
 
-    """.format(expresion_regular = expresion_final, palabra= palabra)
+    """.format(expresion_regular = expresion_final, tokens=tokens,excepciones=excepciones)
 
     scanner = open("scanner.py","w",encoding='utf-8')
     scanner.write(automata_DFA)
