@@ -165,7 +165,7 @@ class Lectura():
                 self.characters[keyValue] = chr(1000)+respuesta+chr(1000)
         
 
-        print("Characters",self.characters)
+        # print("Characters",self.characters)
 
     def readKeywords(self):
         flag = False #Para indicar que encontro Keyboards
@@ -196,7 +196,7 @@ class Lectura():
                 if 'KEYWORDS' in line and not('EXCEPT KEYWORDS.' in line):
                     flag = True
 
-        print("Keywords",self.keywords)
+        # print("Keywords",self.keywords)
 
     def readTokens(self):
         flag = False #Para indicar que encontro TOKENS
@@ -248,7 +248,7 @@ class Lectura():
                     flag = True
                     expresion_final = ""
 
-        print("Tokens",self.tokens)
+        # print("Tokens",self.tokens)
 
     # Metodo que obtiene los | de los characters y tambien agrega los parentesis
     def transformCharacters(self):
@@ -266,11 +266,25 @@ class Lectura():
         print("======= Evaluando los tokens =========")
         #Se realiza la sustitucion de characters en tokens
 
-        #Para trabajar con el mayor len de llave al momento de hacer sustituciones
-        for key in sorted(self.characters, key=len, reverse=True):
-            for keyToken,value in self.tokens.items():
-                #sustitucion de characters por tokens
-                self.tokens[keyToken] = self.tokens[keyToken].replace(key,self.characters[key])
+        for key,value in self.tokens.items():
+            primer = True
+            temp = ""
+            segunda = False
+            cont = 0
+            while cont < len(value):
+                if(value[cont] == "\"" and primer):
+                    temp += chr(706)
+                    primer = False
+                    segunda = True
+                elif(value[cont]=="\"" and segunda):
+                    temp += chr(707)
+                    primer = True
+                    segunda = False
+                else:
+                    temp += value[cont]
+                cont += 1
+            
+            self.tokens[key] = temp
 
         # print("Tokens -> ",self.tokens)
         #Validar que tenga los keywords para enviar la señal
@@ -281,6 +295,33 @@ class Lectura():
                 self.tokens[keyToken] = self.tokens[keyToken].replace(" EXCEPT KEYWORDS","")
             else:
                 self.exceptions[keyToken] = []
+
+        for key,value in self.tokens.items():
+            primer = True
+            temp = ""
+            segunda = False
+            cont = 0
+            while cont < len(value):
+                if(value[cont] == " " and primer):
+                    temp += chr(706)
+                    primer = False
+                    segunda = True
+                elif((value[cont]=="{" or value[cont]==".") and segunda):
+                    temp += chr(707)+value[cont]
+                    primer = True
+                    segunda = False
+                else:
+                    temp += value[cont]
+                cont += 1
+            
+            self.tokens[key] = temp
+
+        #Para trabajar con el mayor len de llave al momento de hacer sustituciones
+        for key in sorted(self.characters, key=len, reverse=True):
+            for keyToken,value in self.tokens.items():
+                #sustitucion de characters por tokens
+                self.tokens[keyToken] = self.tokens[keyToken].replace(key,self.characters[key])
+
 
         # print("Exceptions ",self.exceptions)
         # print("Tokens sin keywords -> ",self.tokens)
@@ -321,6 +362,7 @@ class Lectura():
             
             self.tokens[key] = new_word.replace(chr(1000),'')
 
+
         # print("Token ya con cerradura -> ",self.tokens)
 
         primero = True
@@ -333,7 +375,7 @@ class Lectura():
             self.final_expresion += new_word
             primero = False
 
-        print("Final",repr(self.final_expresion))
+        # print("Final",repr(self.final_expresion))
 
         return repr(self.final_expresion), self.exceptions, self.tokens
             
@@ -463,7 +505,7 @@ class Lectura():
 
 
 if __name__ == "__main__":
-    lec = Lectura('examplecoco.atg')
+    lec = Lectura('CoCoL.ATG')
     # print("Caracter:",lec.charValidator('eol+tab'))
     lec.readCharacters()
     # print("=======================================================")
@@ -817,7 +859,7 @@ class AFD:
 
     def create_states(self):
         cont_states = 1
-        print('Raiz',self.root.get_id())
+        #print('Raiz',self.root.get_id())
         self.alphabet.remove(chr(920))
         fp_root = self._infoLeaf[self.root.get_id()][1] #First pos de la raiz o estado A
         # print(fp_root)
@@ -1080,13 +1122,13 @@ class AFD:
             self.states_tokens[key] = []
             cont += 1
 
-        print("Verificacion -> ",self.verification)
-        print('Estados ->',self.all_states)
+        #print("Verificacion -> ",self.verification)
+        #print('Estados ->',self.all_states)
 
         for key,value in self.all_states.items():
             self.states_inverse[value] = key
 
-        print('Inverso ',self.states_inverse)
+        #print('Inverso ',self.states_inverse)
         #Verificacion si un estado final esta dentro del estado a revisar
         # print("Lista de estados",states)
         llave_token = None
@@ -1099,7 +1141,7 @@ class AFD:
                     # print("En este estado hay un token")
                     self.states_tokens[value].append(val)
 
-        print("Estados de tokens->",self.states_tokens)
+        #print("Estados de tokens->",self.states_tokens)
         # print("States tokens->",self.states_tokens)
         #  print("Entro aqui y estado final es ->",esEstadoFinal,'Y el estado es ->',str(temp_state))
         # if esEstadoFinal:
@@ -1120,7 +1162,7 @@ class AFD:
             # print("Element",element)            
 
         self.states_final = list(dict.fromkeys(self.states_final))
-        print("Finales ",self.states_final)
+        #print("Finales ",self.states_final)
 
         
         #print("Info leafs: ",json.dumps(self._infoLeaf))
@@ -1259,7 +1301,7 @@ word = palabra
 
 res = replace(expression)
 res_final = add_concat(res)
-print("Nueva expresion",res_final)
+#print("Nueva expresion",res_final)
 
 
 # try:
