@@ -426,7 +426,7 @@ class Lectura():
 
         print("Final",repr(self.final_expresion))
 
-        return self.final_expresion, self.exceptions, self.tokens
+        return repr(self.final_expresion), self.exceptions, self.tokens
             
     #Genera los caracteres de c1 a c2
     def char_range(self,c1, c2):
@@ -1344,7 +1344,7 @@ def replace(r):
 palabrafile = open("palabras.txt",'r',encoding='utf-8')
 palabra = palabrafile.read()#input('Palabra a guardar: ')
 
-expression = '{expresion_regular}'
+expression = {expresion_regular}
 word = palabra
 
 res = replace(expression)
