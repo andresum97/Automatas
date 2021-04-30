@@ -10,8 +10,8 @@ import re
 #=============== CAMBIO PARA AUTOMATAS =========================
 # '('  parentesis inicial ->   CHR(706) = '˂'
 # ')'  parentesis final -> CHR(707) = '˃'
-# '*'  cerradura kleene -> CHR(708) = '˄'
-# '|'  pipe de OR -> CHR(741) = '˥'
+# '*'  cerradura kleene -> CHR(708) = '˄' 
+# '|'  pipe de OR -> CHR(741) = '˥' listo
 # '?'  interrogacion -> CHR(709) = '˅'
 # '.'  concatenacion -> CHR(765) = '˽'    listo
 # '+'  agregar otra cerradura -> CHR(931) = 'Σ'
@@ -305,7 +305,7 @@ class Lectura():
                         # print("Ingreso al primer if")
                         # word = word[:index]+'('+word[index+1:]
                     elif letter == "}":
-                        new_word += ')*'
+                        new_word += ')'+chr(708)
                     elif letter == '[':
                         new_word += '('
                     elif letter == ']':
@@ -641,7 +641,7 @@ class AFD:
         if len(self.all_leaf) == 0:
             val_leaf = leaf.Leaf(self.cont_leaf,val,self.cont_leaf+1,self.cont_valueleaf,[]) #node.Node(self.cont_nodes,[('ε',self.cont_nodes+1),('ε',self.cont_nodes+3)])
             # val2_leaf = leaf.Leaf(self.cont_leaf+1,val2,self.cont_leaf+2,[])
-            op_leaf = leaf.Leaf(self.cont_leaf+1,'*',None,None,[self.cont_leaf])
+            op_leaf = leaf.Leaf(self.cont_leaf+1,chr(708),None,None,[self.cont_leaf])
             self.all_leaf.append(val_leaf)
             self.all_leaf.append(op_leaf)
             self.cont_leaf += 1
@@ -650,7 +650,7 @@ class AFD:
             if not(type(val) == tuple):
                 self.cont_leaf += 1
                 val_leaf = leaf.Leaf(self.cont_leaf,val,self.cont_leaf+1,self.cont_valueleaf+1,[])
-                op_leaf = leaf.Leaf(self.cont_leaf+1,'*',None,None,[self.cont_leaf])
+                op_leaf = leaf.Leaf(self.cont_leaf+1,chr(708),None,None,[self.cont_leaf])
                 self.all_leaf.append(val_leaf)
                 self.all_leaf.append(op_leaf)
                 self.cont_leaf += 1
@@ -660,7 +660,7 @@ class AFD:
             elif type(val) == tuple:
                 self.cont_leaf += 1
                 val[0].set_parent(self.cont_leaf)
-                op_leaf = leaf.Leaf(self.cont_leaf,'*',None,None,[val[0].get_id()])
+                op_leaf = leaf.Leaf(self.cont_leaf,chr(708),None,None,[val[0].get_id()])
                 self.all_leaf.append(op_leaf)
 
                 return op_leaf
@@ -671,14 +671,14 @@ class AFD:
             parent = self.nodes_or(val1,val2)
         if op == chr(765):
             parent = self.nodes_cat(val1,val2)
-        if op == "*":
+        if op == chr(708):
             parent = self.nodes_kleene(val1)
 
         return parent
 
 
     def status(self,operator):
-        if operator == '*':
+        if operator == chr(708):
             return 3
         if operator == chr(765):
             return 2
@@ -710,7 +710,7 @@ class AFD:
             res1 = self._infoLeaf[children[0]][0]
             res2 = self._infoLeaf[children[1]][0]
             _nullable = res1 and res2
-        elif value == '*':
+        elif value == chr(708):
             _nullable = True
         elif value == 'ε':
             _nullable = True
@@ -744,7 +744,7 @@ class AFD:
                 # print("First child",first_child)
                 for val in first_child:
                     self._infoLeaf[_id][1].append(val)
-        elif value == '*':
+        elif value == chr(708):
             children = leaf.get_children()
             # print("Children",children)
             element = self._infoLeaf[children[0]][1]
@@ -781,7 +781,7 @@ class AFD:
                 # print("First child",second_child)
                 for val in second_child:
                     self._infoLeaf[_id][2].append(val)
-        elif value == '*':
+        elif value == chr(708):
             children = leaf.get_children()
             # print("Children",children)
             element = self._infoLeaf[children[0]][2]
@@ -805,7 +805,7 @@ class AFD:
                     realid = self.getIdByValue(element)
                     self._infoLeaf[realid][3].append(val)
     
-        elif value == '*':
+        elif value == chr(708):
             _lastpos = self._infoLeaf[_id][2]
             _firstpos_n = self._infoLeaf[_id][1]
             for element in _lastpos:
@@ -947,7 +947,7 @@ class AFD:
         cont = 0
         nodes = []
         # print(self.expression)
-        operadores = [chr(765),'*',')','(',chr(741)] #['.','*',')','(','|']
+        operadores = [chr(765),chr(708),')','(',chr(741)] #['.','*',')','(','|']
         # try:
         while cont < len(self.expression):
             #En el caso del | se generan 6 nodos diferentes
@@ -957,7 +957,7 @@ class AFD:
             elif self.expression[cont] == ')':
                 while((self.operators) and self.operators[-1] != '('):
                     op = self.operators.pop()
-                    if op != '*':
+                    if op != chr(708):
                         val2 = self.values.pop()
                         val1 = self.values.pop()
                         # print('Valor 1: ',val1)
@@ -978,7 +978,7 @@ class AFD:
            #     nodes.append(self.expression[cont])
                 
             else:
-                if(self.expression[cont] != '*'):
+                if(self.expression[cont] != chr(708)):
                     while((self.operators) and self.status(self.operators[-1])>= self.status(self.expression[cont])):
                         # print('Empieza a ver el while')
                         val2 = self.values.pop()
@@ -1181,17 +1181,17 @@ class AFD:
 # para facilitar la lectura de la concatenacion
 def add_concat(expresion):
     new_word = ""
-    operators = ['*',chr(741),'(','?']
+    operators = [chr(708),chr(741),'(','?']
     cont = 0
     while cont < len(expresion):
         if cont+1 >= len(expresion):
             new_word += expresion[-1]
             break
 
-        if expresion[cont] == '*' and not (expresion[cont+1] in operators) and expresion[cont+1] != ')':
+        if expresion[cont] == chr(708) and not (expresion[cont+1] in operators) and expresion[cont+1] != ')':
             new_word += expresion[cont]+chr(765)
             cont += 1
-        elif expresion[cont] == '*' and expresion[cont+1] == '(':
+        elif expresion[cont] == chr(708) and expresion[cont+1] == '(':
             new_word += expresion[cont]+chr(765)
             cont += 1
         elif expresion[cont] == '?' and not (expresion[cont+1] in operators) and expresion[cont+1] != ')':
@@ -1230,9 +1230,9 @@ def replace(r):
 
         #         sub = r[par.pop():i]
                 
-        #         expr = expr + '*' + sub
+        #         expr = expr + chr(708) + sub
         #     else:
-        #         expr = expr + '*' + r[i-1]
+        #         expr = expr + chr(708) + r[i-1]
         if r[i] == '?':
             if(r[i-1] == ')'):
     
