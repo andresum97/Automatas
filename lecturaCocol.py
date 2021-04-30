@@ -575,7 +575,7 @@ class AFD:
             # print("Entro a cat cuando esta vacio")
             val1_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+2,self.cont_valueleaf,[]) #node.Node(self.cont_nodes,[('ε',self.cont_nodes+1),('ε',self.cont_nodes+3)])
             val2_leaf = leaf.Leaf(self.cont_leaf+1,val2,self.cont_leaf+2,self.cont_valueleaf+1,[])
-            op_leaf = leaf.Leaf(self.cont_leaf+2,'.',None,None,[self.cont_leaf,self.cont_leaf+1])
+            op_leaf = leaf.Leaf(self.cont_leaf+2,chr(765),None,None,[self.cont_leaf,self.cont_leaf+1])
             self.all_leaf.append(val1_leaf)
             self.all_leaf.append(val2_leaf)
             self.all_leaf.append(op_leaf)
@@ -589,7 +589,7 @@ class AFD:
                 self.cont_leaf += 1
                 val1_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+1,self.cont_valueleaf+1,[]) #node.Node(self.cont_nodes,[('ε',self.cont_nodes+1),('ε',self.cont_nodes+3)])
                 val2_leaf = leaf.Leaf(self.cont_leaf+1,val2,self.cont_leaf+2,self.cont_valueleaf+2,[])
-                op_leaf = leaf.Leaf(self.cont_leaf+2,'.',None,None,[self.cont_leaf,self.cont_leaf+1])
+                op_leaf = leaf.Leaf(self.cont_leaf+2,chr(765),None,None,[self.cont_leaf,self.cont_leaf+1])
                 self.all_leaf.append(val1_leaf)
                 self.all_leaf.append(val2_leaf)
                 self.all_leaf.append(op_leaf)
@@ -602,7 +602,7 @@ class AFD:
                 self.cont_leaf += 1
                 val2_leaf = leaf.Leaf(self.cont_leaf,val2,self.cont_leaf+1,self.cont_valueleaf+1,[])
                 val1[0].set_parent(self.cont_leaf+1)
-                op_leaf = leaf.Leaf(self.cont_leaf+1,'.',None,None,[val1[0].get_id(),self.cont_leaf])
+                op_leaf = leaf.Leaf(self.cont_leaf+1,chr(765),None,None,[val1[0].get_id(),self.cont_leaf])
                 self.all_leaf.append(val2_leaf)
                 self.all_leaf.append(op_leaf)
 
@@ -615,7 +615,7 @@ class AFD:
                 self.cont_leaf += 1
                 val2_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+1,self.cont_valueleaf+1,[])
                 val2[0].set_parent(self.cont_leaf+1)
-                op_leaf = leaf.Leaf(self.cont_leaf+1,'.',None,None,[self.cont_leaf,val2[0].get_id()])
+                op_leaf = leaf.Leaf(self.cont_leaf+1,chr(765),None,None,[self.cont_leaf,val2[0].get_id()])
                 self.all_leaf.append(val2_leaf)
                 self.all_leaf.append(op_leaf)
 
@@ -628,7 +628,7 @@ class AFD:
                 self.cont_leaf += 1
                 val1[0].set_parent(self.cont_leaf)
                 val2[0].set_parent(self.cont_leaf)
-                op_leaf = leaf.Leaf(self.cont_leaf,'.',None,None,[val1[0].get_id(),val2[0].get_id()])
+                op_leaf = leaf.Leaf(self.cont_leaf,chr(765),None,None,[val1[0].get_id(),val2[0].get_id()])
                 # self.all_leaf.append(val2_leaf)
                 self.all_leaf.append(op_leaf)
 
@@ -666,7 +666,7 @@ class AFD:
         parent = None
         if op == "|":
             parent = self.nodes_or(val1,val2)
-        if op == ".":
+        if op == chr(765):
             parent = self.nodes_cat(val1,val2)
         if op == "*":
             parent = self.nodes_kleene(val1)
@@ -677,7 +677,7 @@ class AFD:
     def status(self,operator):
         if operator == '*':
             return 3
-        if operator == '.':
+        if operator == chr(765):
             return 2
         if operator == '|':
             return 1
@@ -702,7 +702,7 @@ class AFD:
             res1 = self._infoLeaf[children[0]][0]
             res2 = self._infoLeaf[children[1]][0]
             _nullable = res1 or res2
-        elif value == '.':
+        elif value == chr(765):
             children = leaf.get_children()
             res1 = self._infoLeaf[children[0]][0]
             res2 = self._infoLeaf[children[1]][0]
@@ -726,7 +726,7 @@ class AFD:
             for element in children:
                 for val in self._infoLeaf[element][1]:
                     self._infoLeaf[_id][1].append(val)
-        elif value == '.':
+        elif value == chr(765):
             children = leaf.get_children()
             # print("Concat child",children)
             _nullable1 = self._infoLeaf[children[0]][0]
@@ -764,7 +764,7 @@ class AFD:
             for element in children:
                 for val in self._infoLeaf[element][2]:
                     self._infoLeaf[_id][2].append(val)
-        elif value == '.':
+        elif value == chr(765):
             children = leaf.get_children()
             # print("Concat child",children)
             _nullable1 = self._infoLeaf[children[1]][0]
@@ -794,7 +794,7 @@ class AFD:
         value = leaf.get_value()
         _id = leaf.get_id()
         # print("Id",_id)
-        if value == '.' and len(leaf.get_children()) == 2:
+        if value == chr(765) and len(leaf.get_children()) == 2:
             childrens = leaf.get_children()
             _lastpos = self._infoLeaf[childrens[0]][2]
             for element in _lastpos:
@@ -944,7 +944,7 @@ class AFD:
         cont = 0
         nodes = []
         # print(self.expression)
-        operadores = ['.','*',')','(','|']
+        operadores = [chr(765),'*',')','(','|'] #['.']
         # try:
         while cont < len(self.expression):
             #En el caso del | se generan 6 nodos diferentes
@@ -1186,22 +1186,22 @@ def add_concat(expresion):
             break
 
         if expresion[cont] == '*' and not (expresion[cont+1] in operators) and expresion[cont+1] != ')':
-            new_word += expresion[cont]+"."
+            new_word += expresion[cont]+chr(765)
             cont += 1
         elif expresion[cont] == '*' and expresion[cont+1] == '(':
-            new_word += expresion[cont]+"."
+            new_word += expresion[cont]+chr(765)
             cont += 1
         elif expresion[cont] == '?' and not (expresion[cont+1] in operators) and expresion[cont+1] != ')':
-            new_word += expresion[cont]+"."
+            new_word += expresion[cont]+chr(765)
             cont += 1
         elif expresion[cont] == '?' and expresion[cont+1] == '(':
-            new_word += expresion[cont]+"."
+            new_word += expresion[cont]+chr(765)
             cont += 1
         elif not (expresion[cont] in operators) and expresion[cont+1] == ')':
             new_word += expresion[cont]
             cont += 1
         elif (not (expresion[cont] in operators) and not (expresion[cont+1] in operators)) or (not (expresion[cont] in operators) and (expresion[cont+1] == '(')):
-            new_word += expresion[cont]+"."
+            new_word += expresion[cont]+chr(765)
             cont += 1
         else:
             new_word += expresion[cont]
