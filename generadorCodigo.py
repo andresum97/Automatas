@@ -21,7 +21,7 @@ class AFD:
         self.routes = []
         self.last_state = []
         self.token = {'ident': '', 'number': ''}
-        self.excepciones = {'ident': True, 'hexnumber': True, 'number': False, 'signnumber': False}
+        self.excepciones = {'ident': ['aaa', 'do'], 'number':[]}
         self.verification = {}
         self.states_tokens = {}
         self.states_inverse = {}
@@ -401,7 +401,7 @@ class AFD:
         match = True
         check = pos
         index = pos
-        finalState = None
+        finalState = []
         _state = 'S0'
         _isValid = True
         _isInSymbol = True
@@ -705,8 +705,18 @@ class AFD:
         # self.Simulacion()
         pos = 0
         while pos < len(self.word):
-            token, pos, aceptacion = self.simulacionTokens(self.word,pos)
-            print("El token es ",token," y es de tipo->",aceptacion)
+            token, pos, identificador = self.simulacionTokens(self.word,pos)
+            if identificador:
+                acepta = True
+                for exp in self.excepciones[identificador]:
+                    if token == exp:
+                        acepta = False
+                        print('[======',repr(exp),'es el keyword', exp,' ======]')
+                        break
+                if acepta:
+                    print("[====== El simbolo es ",repr(token),' y es de tipo ->',identificador,'======]')
+            else:
+                print('[======',repr(token),'es un simbolo no esperado ======]')
 
 
 
