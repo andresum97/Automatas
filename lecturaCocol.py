@@ -13,9 +13,9 @@ import re
 # '*'  cerradura kleene -> CHR(708) = '˄'
 # '|'  pipe de OR -> CHR(741) = '˥'
 # '?'  interrogacion -> CHR(709) = '˅'
-# '.'  concatenacion -> CHR(765) = '˽'
+# '.'  concatenacion -> CHR(765) = '˽'    listo
 # '+'  agregar otra cerradura -> CHR(931) = 'Σ'
-# '#'  signo de finalizacion de exp -> CHR(920) = 'Θ'
+# '#'  signo de finalizacion de exp -> CHR(920) = 'Θ'       listo
 
 #========= Pendientes
 # hacer los cambios en los Characters
@@ -257,7 +257,7 @@ class Lectura():
             cont = 0
             expr = value.replace(chr(1000),'')
             for letter in expr:
-                temp += letter+'|' if cont < len(expr)-1 else letter
+                temp += letter+chr(741) if cont < len(expr)-1 else letter
                 cont += 1
             
             self.characters[key] = temp+")"+chr(1000)
@@ -310,6 +310,8 @@ class Lectura():
                         new_word += '('
                     elif letter == ']':
                         new_word += ')?'
+                    elif letter == '|':
+                        new_word += chr(741)
                     else:
                         new_word += letter
                     #     # print("Ingreso al segundo if")
@@ -327,7 +329,7 @@ class Lectura():
             if primero:
                 new_word = '(('+values+')'+chr(920)+')'
             else:
-                new_word = '|(('+values+')'+chr(920)+')'
+                new_word = chr(741)+'(('+values+')'+chr(920)+')'
             self.final_expresion += new_word
             primero = False
 
@@ -472,6 +474,7 @@ if __name__ == "__main__":
 
 
     automata_DFA = """ 
+# coding=utf8
 import leaf
 from graphviz import Digraph
 import json
@@ -513,7 +516,7 @@ class AFD:
             #Creo el primer y el ultimo nodo
             val1_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+2,self.cont_valueleaf,[]) #node.Node(self.cont_nodes,[('ε',self.cont_nodes+1),('ε',self.cont_nodes+3)])
             val2_leaf = leaf.Leaf(self.cont_leaf+1,val2,self.cont_leaf+2,self.cont_valueleaf+1,[])
-            op_leaf = leaf.Leaf(self.cont_leaf+2,'|',None,None,[self.cont_leaf,self.cont_leaf+1])
+            op_leaf = leaf.Leaf(self.cont_leaf+2,chr(741),None,None,[self.cont_leaf,self.cont_leaf+1])
             self.all_leaf.append(val1_leaf)
             self.all_leaf.append(val2_leaf)
             self.all_leaf.append(op_leaf)
@@ -525,7 +528,7 @@ class AFD:
                 self.cont_leaf += 1
                 val1_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+2,self.cont_valueleaf+1,[]) #node.Node(self.cont_nodes,[('ε',self.cont_nodes+1),('ε',self.cont_nodes+3)])
                 val2_leaf = leaf.Leaf(self.cont_leaf+1,val2,self.cont_leaf+2,self.cont_valueleaf+2,[])
-                op_leaf = leaf.Leaf(self.cont_leaf+2,'|',None,None,[self.cont_leaf,self.cont_leaf+1])
+                op_leaf = leaf.Leaf(self.cont_leaf+2,chr(741),None,None,[self.cont_leaf,self.cont_leaf+1])
                 self.all_leaf.append(val1_leaf)
                 self.all_leaf.append(val2_leaf)
                 self.all_leaf.append(op_leaf)
@@ -538,7 +541,7 @@ class AFD:
                 #val1_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+2,self.cont_valueleaf,[]) #node.Node(self.cont_nodes,[('ε',self.cont_nodes+1),('ε',self.cont_nodes+3)])
                 val2_leaf = leaf.Leaf(self.cont_leaf,val2,self.cont_leaf+1,self.cont_valueleaf+1,[])
                 val1[0].set_parent(self.cont_leaf+1)
-                op_leaf = leaf.Leaf(self.cont_leaf+1,'|',None,None,[val1[0].get_id(),self.cont_leaf])
+                op_leaf = leaf.Leaf(self.cont_leaf+1,chr(741),None,None,[val1[0].get_id(),self.cont_leaf])
                 self.all_leaf.append(val2_leaf)
                 self.all_leaf.append(op_leaf)
                 self.cont_leaf += 1
@@ -550,7 +553,7 @@ class AFD:
                 #val1_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+2,self.cont_valueleaf,[]) #node.Node(self.cont_nodes,[('ε',self.cont_nodes+1),('ε',self.cont_nodes+3)])
                 val2_leaf = leaf.Leaf(self.cont_leaf,val1,self.cont_leaf+1,self.cont_valueleaf+1,[])
                 val2[0].set_parent(self.cont_leaf+1)
-                op_leaf = leaf.Leaf(self.cont_leaf+1,'|',None,None,[val2[0].get_id(),self.cont_leaf])
+                op_leaf = leaf.Leaf(self.cont_leaf+1,chr(741),None,None,[val2[0].get_id(),self.cont_leaf])
                 self.all_leaf.append(val2_leaf)
                 self.all_leaf.append(op_leaf)
                 self.cont_leaf += 1
@@ -563,7 +566,7 @@ class AFD:
                 # val2_leaf = leaf.Leaf(self.cont_leaf,val2,self.cont_leaf+1,self.cont_valueleaf+1,[])
                 val1[0].set_parent(self.cont_leaf)
                 val2[0].set_parent(self.cont_leaf)
-                op_leaf = leaf.Leaf(self.cont_leaf,'|',None,None,[val1[0].get_id(),val2[0].get_id()])
+                op_leaf = leaf.Leaf(self.cont_leaf,chr(741),None,None,[val1[0].get_id(),val2[0].get_id()])
                 # self.all_leaf.append(val2_leaf)
                 self.all_leaf.append(op_leaf)
                 # self.cont_leaf += 1
@@ -664,7 +667,7 @@ class AFD:
 
     def operations(self,op,val1,val2=None):
         parent = None
-        if op == "|":
+        if op == chr(741):
             parent = self.nodes_or(val1,val2)
         if op == chr(765):
             parent = self.nodes_cat(val1,val2)
@@ -679,7 +682,7 @@ class AFD:
             return 3
         if operator == chr(765):
             return 2
-        if operator == '|':
+        if operator == chr(741):
             return 1
         return 0
 
@@ -697,7 +700,7 @@ class AFD:
         value = leaf.get_value()
         _id = leaf.get_id()
         _nullable = None
-        if value == '|':
+        if value == chr(741):
             children = leaf.get_children()
             res1 = self._infoLeaf[children[0]][0]
             res2 = self._infoLeaf[children[1]][0]
@@ -721,7 +724,7 @@ class AFD:
         _id = leaf.get_id()
         _firstpos = None
         # print("Id",_id)
-        if value == '|':
+        if value == chr(741):
             children = leaf.get_children()
             for element in children:
                 for val in self._infoLeaf[element][1]:
@@ -759,7 +762,7 @@ class AFD:
         _id = leaf.get_id()
         _lastpos = None
         # print("Id",_id)
-        if value == '|':
+        if value == chr(741):
             children = leaf.get_children()
             for element in children:
                 for val in self._infoLeaf[element][2]:
@@ -944,7 +947,7 @@ class AFD:
         cont = 0
         nodes = []
         # print(self.expression)
-        operadores = [chr(765),'*',')','(','|'] #['.']
+        operadores = [chr(765),'*',')','(',chr(741)] #['.','*',')','(','|']
         # try:
         while cont < len(self.expression):
             #En el caso del | se generan 6 nodos diferentes
@@ -1178,7 +1181,7 @@ class AFD:
 # para facilitar la lectura de la concatenacion
 def add_concat(expresion):
     new_word = ""
-    operators = ['*','|','(','?']
+    operators = ['*',chr(741),'(','?']
     cont = 0
     while cont < len(expresion):
         if cont+1 >= len(expresion):
@@ -1237,11 +1240,11 @@ def replace(r):
                 subl = len(sub)-1
                 expr = expr[:-subl]
                 expr = expr + sub
-                expr = expr  +  '|' + 'ε)'
+                expr = expr  +  chr(741) + 'ε)'
             else:
                 letra = expr[-1]
                 expr = expr[:-1]
-                expr = expr + '(' + letra + '|' + 'ε)'
+                expr = expr + '(' + letra + chr(741) + 'ε)'
         else:
             expr = expr + r[i]
         i+=1
