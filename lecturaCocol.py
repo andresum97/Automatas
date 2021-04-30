@@ -8,9 +8,9 @@ import re
 
 
 #=============== CAMBIO PARA AUTOMATAS =========================
-# '('  parentesis inicial ->   CHR(706) = '˂'
-# ')'  parentesis final -> CHR(707) = '˃'
-# '*'  cerradura kleene -> CHR(708) = '˄' 
+# '('  parentesis inicial ->   CHR(706) = '˂' listo
+# ')'  parentesis final -> CHR(707) = '˃' listo
+# '*'  cerradura kleene -> CHR(708) = '˄' listo
 # '|'  pipe de OR -> CHR(741) = '˥' listo
 # '?'  interrogacion -> CHR(709) = '˅'
 # '.'  concatenacion -> CHR(765) = '˽'    listo
@@ -253,14 +253,14 @@ class Lectura():
     # Metodo que obtiene los | de los characters y tambien agrega los parentesis
     def transformCharacters(self):
         for key,value in self.characters.items():
-            temp = chr(1000)+"("
+            temp = chr(1000)+chr(706)
             cont = 0
             expr = value.replace(chr(1000),'')
             for letter in expr:
                 temp += letter+chr(741) if cont < len(expr)-1 else letter
                 cont += 1
             
-            self.characters[key] = temp+")"+chr(1000)
+            self.characters[key] = temp+chr(707)+chr(1000)
                 
     def tokenEvaluator(self):
         print("======= Evaluando los tokens =========")
@@ -301,15 +301,15 @@ class Lectura():
                     new_word += letter
                 else:
                     if letter == "{":
-                        new_word += '('
+                        new_word += chr(706) #(
                         # print("Ingreso al primer if")
                         # word = word[:index]+'('+word[index+1:]
                     elif letter == "}":
-                        new_word += ')'+chr(708)
+                        new_word += chr(707)+chr(708) #)*
                     elif letter == '[':
-                        new_word += '('
+                        new_word += chr(706) #()
                     elif letter == ']':
-                        new_word += ')?'
+                        new_word += chr(707)+'?'
                     elif letter == '|':
                         new_word += chr(741)
                     else:
@@ -327,9 +327,9 @@ class Lectura():
         #Para devolver el gran string
         for key,values in self.tokens.items():
             if primero:
-                new_word = '(('+values+')'+chr(920)+')'
+                new_word = chr(706)+chr(706)+values+chr(707)+chr(920)+chr(707)
             else:
-                new_word = chr(741)+'(('+values+')'+chr(920)+')'
+                new_word = chr(741)+chr(706)+chr(706)+values+chr(707)+chr(920)+chr(707)
             self.final_expresion += new_word
             primero = False
 
@@ -947,15 +947,15 @@ class AFD:
         cont = 0
         nodes = []
         # print(self.expression)
-        operadores = [chr(765),chr(708),')','(',chr(741)] #['.','*',')','(','|']
+        operadores = [chr(765),chr(708),chr(707),chr(706),chr(741)] #['.','*',')','(','|']
         # try:
         while cont < len(self.expression):
             #En el caso del | se generan 6 nodos diferentes
             # print("Caracter: ",self.expression[cont])
-            if self.expression[cont] == '(':
+            if self.expression[cont] == chr(706):
                 self.operators.append(self.expression[cont])
-            elif self.expression[cont] == ')':
-                while((self.operators) and self.operators[-1] != '('):
+            elif self.expression[cont] == chr(707):
+                while((self.operators) and self.operators[-1] != chr(706)):
                     op = self.operators.pop()
                     if op != chr(708):
                         val2 = self.values.pop()
@@ -1181,29 +1181,29 @@ class AFD:
 # para facilitar la lectura de la concatenacion
 def add_concat(expresion):
     new_word = ""
-    operators = [chr(708),chr(741),'(','?']
+    operators = [chr(708),chr(741),chr(706),'?']
     cont = 0
     while cont < len(expresion):
         if cont+1 >= len(expresion):
             new_word += expresion[-1]
             break
 
-        if expresion[cont] == chr(708) and not (expresion[cont+1] in operators) and expresion[cont+1] != ')':
+        if expresion[cont] == chr(708) and not (expresion[cont+1] in operators) and expresion[cont+1] != chr(707):
             new_word += expresion[cont]+chr(765)
             cont += 1
-        elif expresion[cont] == chr(708) and expresion[cont+1] == '(':
+        elif expresion[cont] == chr(708) and expresion[cont+1] == chr(706):
             new_word += expresion[cont]+chr(765)
             cont += 1
-        elif expresion[cont] == '?' and not (expresion[cont+1] in operators) and expresion[cont+1] != ')':
+        elif expresion[cont] == '?' and not (expresion[cont+1] in operators) and expresion[cont+1] != chr(707):
             new_word += expresion[cont]+chr(765)
             cont += 1
-        elif expresion[cont] == '?' and expresion[cont+1] == '(':
+        elif expresion[cont] == '?' and expresion[cont+1] == chr(706):
             new_word += expresion[cont]+chr(765)
             cont += 1
-        elif not (expresion[cont] in operators) and expresion[cont+1] == ')':
+        elif not (expresion[cont] in operators) and expresion[cont+1] == chr(707):
             new_word += expresion[cont]
             cont += 1
-        elif (not (expresion[cont] in operators) and not (expresion[cont+1] in operators)) or (not (expresion[cont] in operators) and (expresion[cont+1] == '(')):
+        elif (not (expresion[cont] in operators) and not (expresion[cont+1] in operators)) or (not (expresion[cont] in operators) and (expresion[cont+1] == chr(706))):
             new_word += expresion[cont]+chr(765)
             cont += 1
         else:
@@ -1222,11 +1222,11 @@ def replace(r):
     sub = ''
     resta = []
     while i <len(r):
-        if(r[i] =='('):
+        if(r[i] == chr(706)):
             par.append(i)
         # if r[i] == '+':
             
-        #     if(r[i-1] == ')'):
+        #     if(r[i-1] == chr(707)):
 
         #         sub = r[par.pop():i]
                 
@@ -1234,17 +1234,17 @@ def replace(r):
         #     else:
         #         expr = expr + chr(708) + r[i-1]
         if r[i] == '?':
-            if(r[i-1] == ')'):
+            if(r[i-1] == chr(707)):
     
                 sub = r[par.pop():i]
                 subl = len(sub)-1
                 expr = expr[:-subl]
                 expr = expr + sub
-                expr = expr  +  chr(741) + 'ε)'
+                expr = expr  +  chr(741) + 'ε'+chr(707)
             else:
                 letra = expr[-1]
                 expr = expr[:-1]
-                expr = expr + '(' + letra + chr(741) + 'ε)'
+                expr = expr + chr(706) + letra + chr(741) + 'ε'+chr(707)
         else:
             expr = expr + r[i]
         i+=1
