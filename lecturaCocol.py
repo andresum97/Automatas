@@ -309,7 +309,7 @@ class Lectura():
                     elif letter == '[':
                         new_word += chr(706) #()
                     elif letter == ']':
-                        new_word += chr(707)+'?'
+                        new_word += chr(707)+chr(709)
                     elif letter == '|':
                         new_word += chr(741)
                     else:
@@ -1181,7 +1181,7 @@ class AFD:
 # para facilitar la lectura de la concatenacion
 def add_concat(expresion):
     new_word = ""
-    operators = [chr(708),chr(741),chr(706),'?']
+    operators = [chr(708),chr(741),chr(706),chr(709)]
     cont = 0
     while cont < len(expresion):
         if cont+1 >= len(expresion):
@@ -1194,10 +1194,10 @@ def add_concat(expresion):
         elif expresion[cont] == chr(708) and expresion[cont+1] == chr(706):
             new_word += expresion[cont]+chr(765)
             cont += 1
-        elif expresion[cont] == '?' and not (expresion[cont+1] in operators) and expresion[cont+1] != chr(707):
+        elif expresion[cont] == chr(709) and not (expresion[cont+1] in operators) and expresion[cont+1] != chr(707):
             new_word += expresion[cont]+chr(765)
             cont += 1
-        elif expresion[cont] == '?' and expresion[cont+1] == chr(706):
+        elif expresion[cont] == chr(709) and expresion[cont+1] == chr(706):
             new_word += expresion[cont]+chr(765)
             cont += 1
         elif not (expresion[cont] in operators) and expresion[cont+1] == chr(707):
@@ -1233,7 +1233,7 @@ def replace(r):
         #         expr = expr + chr(708) + sub
         #     else:
         #         expr = expr + chr(708) + r[i-1]
-        if r[i] == '?':
+        if r[i] == chr(709):
             if(r[i-1] == chr(707)):
     
                 sub = r[par.pop():i]
