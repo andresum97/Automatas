@@ -56,7 +56,6 @@ class Lectura():
                         else:
                             keys, error = self.Validator(expresion_final,[2])
                             if(keys):
-                                print("Encontro un encabezado")
                                 flag = False
                                 break
 
@@ -87,11 +86,11 @@ class Lectura():
                     expresion_final = ""
         
 
-        print('Characters original->',self.characters)
+        # print('Characters original->',self.characters)
         for key,value in self.characters.items():
             self.characters[key] = self.comillasValidator(value) 
 
-        print("Comillas cambiadas ",self.characters)
+        # print("Comillas cambiadas ",self.characters)
         #Para manejar los chars
         for key,value in self.characters.items():
             self.characters[key] = self.charValidator(value)
@@ -99,7 +98,7 @@ class Lectura():
         for key,value in self.characters.items():
             self.characters[key] = self.anyValidator(value)
 
-        print("Characters luego de manejar chars",self.characters)
+        # print("Characters luego de manejar chars",self.characters)
 
         
 
@@ -164,98 +163,6 @@ class Lectura():
                     cont += 1
                 
                 self.characters[keyValue] = chr(1000)+respuesta+chr(1000)
-
-
-
-
-            ### INTENTO 3 CON  findall
-            # sentence = value
-            # newValue = ""
-            # cont = 0
-            # res = ""
-            # contString = 0
-            # notString = True
-            # check = True
-
-            # _wordsString = re.findall(r'\"(.*?)\"',sentence)
-            # if len(_wordsString) > 1: #Para indicar si solamente es una palabra o si hay operaciones
-            #     while check:
-            #         primer =  _wordsString[0]
-            #         op = sentence[len(primer)+3] if cont == 0 else sentence[len(primer)+1]
-            #         segundo = _wordsString[1]
-            #         if op == '+':
-            #             res = primer+segundo
-            #         elif op == '-':
-            #             res = primer.translate({ord(i): None for i in segundo})
-                    
-            #         if len(_wordsString) == 2: #Si ya solo quedan dos valores
-            #             sentence = '"'+res+'"'
-            #             check = False
-            #         else:
-            #             cont = len(primer)+len(segundo)+5
-            #             sentence = '"'+res+sentence[cont:]
-            #             _wordsString = re.findall(r'\"(.*?)\"',sentence)
-                    
-            #         cont += 1
-
-            #     self.characters[keyValue] = sentence
-
-            #==============================================================================
-
-            # for letter in sentence:
-            #     if letter == '"':
-            #         notString = not(notString)
-            #     if notString and letter == '-':
-            #         temp_index = sentence.find('-',cont) 
-            #         if str(sentence).find('+',temp_index+1) > -1:
-            #             next_index = str(sentence).find('+',temp_index+1)
-            #         elif str(sentence).find('-',temp_index+1) > -1:
-            #             next_index = str(sentence).find('-',temp_index+1)
-            #         else:
-            #             next_index = -1
-            #         first_element = sentence[:temp_index]
-            #         if next_index > -1:
-            #             second_element = str(sentence)[temp_index+1:next_index]
-            #             cont_word = str(sentence)[next_index:]
-            #             new_word = first_element.translate({ord(i): None for i in second_element})
-            #             sentence = new_word+cont_word
-            #         else:
-            #             second_element = str(sentence)[temp_index+1:]
-            #             new_word = first_element.translate({ord(i): None for i in second_element})
-            #             sentence = new_word
-            #TE QUEDASTE AQUI!!! ESTAS ARREGLANDO LO DEL -  PARA QUE NO SE CUMPLA SI ESTA DENTRO DE ""
-
-            #     cont += 1
-
-            # self.characters[keyValue] = sentence
-
-            
-            # esto funcionaba antes
-            
-            # while self.characters[keyValue].find('-') > -1:
-            #     temp_index = self.characters[keyValue].find('-')
-            #     if str(self.characters[keyValue]).find('+',temp_index+1) > -1:
-            #         next_index = str(self.characters[keyValue]).find('+',temp_index+1)
-            #     elif str(self.characters[keyValue]).find('-',temp_index+1) > -1:
-            #         next_index = str(self.characters[keyValue]).find('-',temp_index+1)
-            #     else:
-            #         next_index = -1
-            #     first_element = str(self.characters[keyValue])[:temp_index]
-            #     if next_index > -1:
-            #         second_element = str(self.characters[keyValue])[temp_index+1:next_index]
-            #         cont_word = str(self.characters[keyValue])[next_index:]
-            #         new_word = first_element.translate({ord(i): None for i in second_element})
-            #         self.characters[keyValue] = new_word+cont_word
-            #     else:
-            #         second_element = str(self.characters[keyValue])[temp_index+1:]
-            #         new_word = first_element.translate({ord(i): None for i in second_element})
-            #         self.characters[keyValue] = new_word
-
-                # print("New word -> "+self.characters[keyValue])
-
-                # print("Temp index -> ",temp_index,"; next index-> ",next_index," f_element-> ",first_element,"; s_element->",second_element)
-
-            # self.characters[keyValue] = self.characters[keyValue].replace("+","")
         
 
         print("Characters",self.characters)
@@ -286,7 +193,7 @@ class Lectura():
                     elif error:
                         print("La expresion no es valida")
 
-                if 'KEYWORDS' in line:
+                if 'KEYWORDS' in line and not('EXCEPT KEYWORDS.' in line):
                     flag = True
 
         print("Keywords",self.keywords)
@@ -365,7 +272,7 @@ class Lectura():
                 #sustitucion de characters por tokens
                 self.tokens[keyToken] = self.tokens[keyToken].replace(key,self.characters[key])
 
-        print("Tokens -> ",self.tokens)
+        # print("Tokens -> ",self.tokens)
         #Validar que tenga los keywords para enviar la señal
 
         for keyToken,value in self.tokens.items():
@@ -375,8 +282,8 @@ class Lectura():
             else:
                 self.exceptions[keyToken] = []
 
-        print("Exceptions ",self.exceptions)
-        print("Tokens sin keywords -> ",self.tokens)
+        # print("Exceptions ",self.exceptions)
+        # print("Tokens sin keywords -> ",self.tokens)
 
         #Ahora ya transforma las expresiones regulares
         #Recorrer cada letra, y si encuentra la expresion la cambia
@@ -412,15 +319,15 @@ class Lectura():
             
             self.tokens[key] = new_word.replace(chr(1000),'')
 
-        print("Token ya con cerradura -> ",self.tokens)
+        # print("Token ya con cerradura -> ",self.tokens)
 
         primero = True
         #Para devolver el gran string
         for key,values in self.tokens.items():
             if primero:
-                new_word = '(('+values+')#)'
+                new_word = '(('+values+')'+chr(920)+')'
             else:
-                new_word = '|(('+values+')#)'
+                new_word = '|(('+values+')'+chr(920)+')'
             self.final_expresion += new_word
             primero = False
 
@@ -908,7 +815,7 @@ class AFD:
     def create_states(self):
         cont_states = 1
         print('Raiz',self.root.get_id())
-        self.alphabet.remove('#')
+        self.alphabet.remove(chr(920))
         fp_root = self._infoLeaf[self.root.get_id()][1] #First pos de la raiz o estado A
         # print(fp_root)
         temp_values_state = []
@@ -1149,7 +1056,7 @@ class AFD:
         cont = 0
         for val in list(self.leaf_values.values()):
             # print("VAL->",val)
-            if val == '#':
+            if val == chr(920):
                 self.last_state.append(keys[cont])
             cont += 1
         
