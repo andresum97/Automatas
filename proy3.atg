@@ -1,0 +1,44 @@
+COMPILER proy3
+
+CHARACTERS
+
+letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+digit  = "0123456789".
+quote  = CHR(34).
+anyButQuote = ANY - quote.
+tab = CHR(9).
+eol = CHR(10).
+blanco = eol+CHR(13)+tab+' '.
+operadores = "+-=()[]{}|.<>".
+simbolos = blanco + operadores.
+equal= '='.
+point = '.'.
+bropen = '{'.
+brclose = '}'.
+sqopen = '['.
+sqclose = ']'.
+popen = '('.
+pclose = ')'.
+un = '|'.
+min = "<".
+max = ">".
+any2 = ANY-blanco.
+
+TOKENS
+
+s_action = popenpoint{any2}pointpclose.
+ident    = letter{letter|digit}.
+eq       = equal.
+p_end    = point.
+br_open  = bropen.
+br_close = brclose.
+sq_open  = sqopen.
+sq_close = sqclose.
+p_open   = popen.
+p_close  = pclose.
+union    = un.
+attr     = min{any2}max.
+white = blanco{blanco}.
+
+
+END proy3
