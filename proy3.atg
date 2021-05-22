@@ -28,6 +28,7 @@ TOKENS
 
 s_action = popenpoint{any2}pointpclose.
 ident    = letter{letter|digit}.
+tok = quoteanyButQuotequote.
 eq       = equal.
 p_end    = point.
 br_open  = bropen.

@@ -1,7 +1,6 @@
  
 # coding=utf8
 import leaf
-from graphviz import Digraph
 import json
 
 class AFD:
@@ -22,11 +21,12 @@ class AFD:
         self.states_final = []
         self.routes = []
         self.last_state = []
-        self.token = {'s_action': '˂(˃˂.˃˂˂\t˥\x0b˥\r˥\x0e˥ ˥!˥"˥#˥$˥%˥&˥\'˥(˥)˥*˥+˥,˥-˥.˥/˥0˥1˥2˥3˥4˥5˥6˥7˥8˥9˥:˥;˥<˥=˥>˥?˥@˥A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥[˥\\˥]˥^˥_˥`˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˥{˥|˥}˥~˥\x7f˥\r˥\t˥ ˃˃˄˂.˃˂)˃', 'ident': '˂A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˃˂˂A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˃˥˂0˥1˥2˥3˥4˥5˥6˥7˥8˥9˃˃˄', 'eq': '˂=˃', 'p_end': '˂.˃', 'br_open': '˂{˃', 'br_close': '˂}˃', 'sq_open': '˂[˃', 'sq_close': '˂]˃', 'p_open': '˂(˃', 'p_close': '˂)˃', 'union': '˂|˃', 'attr': '˂<˃˂˂\t˥\x0b˥\r˥\x0e˥ ˥!˥"˥#˥$˥%˥&˥\'˥(˥)˥*˥+˥,˥-˥.˥/˥0˥1˥2˥3˥4˥5˥6˥7˥8˥9˥:˥;˥<˥=˥>˥?˥@˥A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥[˥\\˥]˥^˥_˥`˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˥{˥|˥}˥~˥\x7f˥\r˥\t˥ ˃˃˄˂>˃', 'white': '˂\n˥\r˥\t˥ ˃˂˂\n˥\r˥\t˥ ˃˃˄'}
-        self.excepciones = {'s_action': [], 'ident': [], 'eq': [], 'p_end': [], 'br_open': [], 'br_close': [], 'sq_open': [], 'sq_close': [], 'p_open': [], 'p_close': [], 'union': [], 'attr': [], 'white': []}
+        self.token = {'s_action': '˂(˃˂.˃˂˂\t˥\x0b˥\r˥\x0e˥ ˥!˥"˥#˥$˥%˥&˥\'˥(˥)˥*˥+˥,˥-˥.˥/˥0˥1˥2˥3˥4˥5˥6˥7˥8˥9˥:˥;˥<˥=˥>˥?˥@˥A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥[˥\\˥]˥^˥_˥`˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˥{˥|˥}˥~˥\x7f˥\r˥\t˥ ˃˃˄˂.˃˂)˃', 'ident': '˂A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˃˂˂A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˃˥˂0˥1˥2˥3˥4˥5˥6˥7˥8˥9˃˃˄', 'tok': '˂"˃˂\t˥\n˥\x0b˥\r˥\x0e˥ ˥!˥#˥$˥%˥&˥\'˥(˥)˥*˥+˥,˥-˥.˥/˥0˥1˥2˥3˥4˥5˥6˥7˥8˥9˥:˥;˥<˥=˥>˥?˥@˥A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥[˥\\˥]˥^˥_˥`˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˥{˥|˥}˥~˥\x7f˃˂"˃', 'eq': '˂=˃', 'p_end': '˂.˃', 'br_open': '˂{˃', 'br_close': '˂}˃', 'sq_open': '˂[˃', 'sq_close': '˂]˃', 'p_open': '˂(˃', 'p_close': '˂)˃', 'union': '˂|˃', 'attr': '˂<˃˂˂\t˥\x0b˥\r˥\x0e˥ ˥!˥"˥#˥$˥%˥&˥\'˥(˥)˥*˥+˥,˥-˥.˥/˥0˥1˥2˥3˥4˥5˥6˥7˥8˥9˥:˥;˥<˥=˥>˥?˥@˥A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥[˥\\˥]˥^˥_˥`˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˥{˥|˥}˥~˥\x7f˥\r˥\t˥ ˃˃˄˂>˃', 'white': '˂\n˥\r˥\t˥ ˃˂˂\n˥\r˥\t˥ ˃˃˄'}
+        self.excepciones = {'s_action': [], 'ident': [], 'tok': [], 'eq': [], 'p_end': [], 'br_open': [], 'br_close': [], 'sq_open': [], 'sq_close': [], 'p_open': [], 'p_close': [], 'union': [], 'attr': [], 'white': []}
         self.verification = {}
         self.states_tokens = {}
         self.states_inverse = {}
+        self.productions = []
         self.process_expression()
 
 
@@ -683,114 +683,129 @@ class AFD:
             pass
 
     
+        primero = False
+        resultados = []
         # self.Simulacion()
-        pos = 0
-        while pos < len(self.word):
-            token, pos, identificador = self.simulacionTokens(self.word,pos)
-            if identificador:
-                acepta = True
-                for exp in self.excepciones[identificador]:
-                    if token == exp:
-                        acepta = False
-                        print('[======',repr(exp),'es el keyword', exp,' ======]')
-                        break
-                if acepta:
-                    print("[====== El simbolo es ",repr(token),' y es de tipo ->',identificador,'======]')
-            else:
-                print('[======',repr(token),'es un simbolo no esperado ======]')
-
-
-
-
-# Metodo que agrega el valor de . a la expresion
-# para facilitar la lectura de la concatenacion
-def add_concat(expresion):
-    new_word = ""
-    operators = [chr(708),chr(741),chr(706),chr(709)]
-    cont = 0
-    while cont < len(expresion):
-        if cont+1 >= len(expresion):
-            new_word += expresion[-1]
-            break
-
-        if expresion[cont] == chr(708) and not (expresion[cont+1] in operators) and expresion[cont+1] != chr(707):
-            new_word += expresion[cont]+chr(765)
-            cont += 1
-        elif expresion[cont] == chr(708) and expresion[cont+1] == chr(706):
-            new_word += expresion[cont]+chr(765)
-            cont += 1
-        elif expresion[cont] == chr(709) and not (expresion[cont+1] in operators) and expresion[cont+1] != chr(707):
-            new_word += expresion[cont]+chr(765)
-            cont += 1
-        elif expresion[cont] == chr(709) and expresion[cont+1] == chr(706):
-            new_word += expresion[cont]+chr(765)
-            cont += 1
-        elif not (expresion[cont] in operators) and expresion[cont+1] == chr(707):
-            new_word += expresion[cont]
-            cont += 1
-        elif (not (expresion[cont] in operators) and not (expresion[cont+1] in operators)) or (not (expresion[cont] in operators) and (expresion[cont+1] == chr(706))):
-            new_word += expresion[cont]+chr(765)
-            cont += 1
-        else:
-            new_word += expresion[cont]
-            cont += 1
-    
-    return new_word
+        #Ciclo que va recorriendo las distintas lineas de la produccion encontrada y va encontrando lo tokens y poniendo su tipo
+        for expr in self.word:
+            pos = 0
+            # key = ""
+            while pos < len(expr):
+                token, pos, identificador = self.simulacionTokens(expr,pos)
+                if identificador:
+                    acepta = True
+                    for exp in self.excepciones[identificador]:
+                        if token == exp:
+                            acepta = False
+                            print('[======',repr(exp),'es el keyword', exp,' ======]')
+                            break
+                    if acepta:
+                        resultados.append((repr(token),identificador))
+                        print("[====== El simbolo es ",repr(token),' y es de tipo ->',identificador,'======]')
+                else:
+                    resultados.append((repr(token),"no_esperado"))
+                    print('[======',repr(token),'es un simbolo no esperado ======]')
+            
+            self.productions = resultados
 
 
 ##========================= Menu =================
-def replace(r):
-     #ε
-    i = 0
-    expr = ''
-    par = []
-    sub = ''
-    resta = []
-    while i <len(r):
-        if(r[i] == chr(706)):
-            par.append(i)
-        # if r[i] == '+':
-            
-        #     if(r[i-1] == chr(707)):
 
-        #         sub = r[par.pop():i]
+
+
+#Clase que va a obtener las producciones
+class lecProductions():
+    def __init__(self,word):
+        self.word = word
+        self.expression = '˂˂˂(˃˂.˃˂˂\t˥\x0b˥\r˥\x0e˥ ˥!˥"˥#˥$˥%˥&˥\'˥(˥)˥*˥+˥,˥-˥.˥/˥0˥1˥2˥3˥4˥5˥6˥7˥8˥9˥:˥;˥<˥=˥>˥?˥@˥A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥[˥\\˥]˥^˥_˥`˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˥{˥|˥}˥~˥\x7f˥\r˥\t˥ ˃˃˄˂.˃˂)˃˃Θ˃˥˂˂˂A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˃˂˂A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˃˥˂0˥1˥2˥3˥4˥5˥6˥7˥8˥9˃˃˄˃Θ˃˥˂˂˂"˃˂\t˥\n˥\x0b˥\r˥\x0e˥ ˥!˥#˥$˥%˥&˥\'˥(˥)˥*˥+˥,˥-˥.˥/˥0˥1˥2˥3˥4˥5˥6˥7˥8˥9˥:˥;˥<˥=˥>˥?˥@˥A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥[˥\\˥]˥^˥_˥`˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˥{˥|˥}˥~˥\x7f˃˂"˃˃Θ˃˥˂˂˂=˃˃Θ˃˥˂˂˂.˃˃Θ˃˥˂˂˂{˃˃Θ˃˥˂˂˂}˃˃Θ˃˥˂˂˂[˃˃Θ˃˥˂˂˂]˃˃Θ˃˥˂˂˂(˃˃Θ˃˥˂˂˂)˃˃Θ˃˥˂˂˂|˃˃Θ˃˥˂˂˂<˃˂˂\t˥\x0b˥\r˥\x0e˥ ˥!˥"˥#˥$˥%˥&˥\'˥(˥)˥*˥+˥,˥-˥.˥/˥0˥1˥2˥3˥4˥5˥6˥7˥8˥9˥:˥;˥<˥=˥>˥?˥@˥A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥[˥\\˥]˥^˥_˥`˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˥{˥|˥}˥~˥\x7f˥\r˥\t˥ ˃˃˄˂>˃˃Θ˃˥˂˂˂\n˥\r˥\t˥ ˃˂˂\n˥\r˥\t˥ ˃˃˄˃Θ˃'
+        res = self.replace(self.expression)
+        self.res_final = self.add_concat(res)
+        self.resultado = []
+        self.key = ""
+        self.execAFD()
+        
+
+    def replace(self,r):
+        #ε
+        i = 0
+        expr = ''
+        par = []
+        sub = ''
+        resta = []
+        while i <len(r):
+            if(r[i] == chr(706)):
+                par.append(i)
+            # if r[i] == '+':
                 
-        #         expr = expr + chr(708) + sub
-        #     else:
-        #         expr = expr + chr(708) + r[i-1]
-        if r[i] == chr(709):
-            if(r[i-1] == chr(707)):
-    
-                sub = r[par.pop():i]
-                subl = len(sub)-1
-                expr = expr[:-subl]
-                expr = expr + sub
-                expr = expr  +  chr(741) + 'ε'+chr(707)
+            #     if(r[i-1] == chr(707)):
+
+            #         sub = r[par.pop():i]
+                    
+            #         expr = expr + chr(708) + sub
+            #     else:
+            #         expr = expr + chr(708) + r[i-1]
+            if r[i] == chr(709):
+                if(r[i-1] == chr(707)):
+        
+                    sub = r[par.pop():i]
+                    subl = len(sub)-1
+                    expr = expr[:-subl]
+                    expr = expr + sub
+                    expr = expr  +  chr(741) + 'ε'+chr(707)
+                else:
+                    letra = expr[-1]
+                    expr = expr[:-1]
+                    expr = expr + chr(706) + letra + chr(741) + 'ε'+chr(707)
             else:
-                letra = expr[-1]
-                expr = expr[:-1]
-                expr = expr + chr(706) + letra + chr(741) + 'ε'+chr(707)
-        else:
-            expr = expr + r[i]
-        i+=1
+                expr = expr + r[i]
+            i+=1
 
-    return expr
-
-archivo = input("Ingrese archivo de prueba txt ")
-palabrafile = open(archivo,'r',encoding='utf-8')
-palabra = palabrafile.read()#input('Palabra a guardar: ')
-
-expression = '˂˂˂(˃˂.˃˂˂\t˥\x0b˥\r˥\x0e˥ ˥!˥"˥#˥$˥%˥&˥\'˥(˥)˥*˥+˥,˥-˥.˥/˥0˥1˥2˥3˥4˥5˥6˥7˥8˥9˥:˥;˥<˥=˥>˥?˥@˥A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥[˥\\˥]˥^˥_˥`˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˥{˥|˥}˥~˥\x7f˥\r˥\t˥ ˃˃˄˂.˃˂)˃˃Θ˃˥˂˂˂A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˃˂˂A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˃˥˂0˥1˥2˥3˥4˥5˥6˥7˥8˥9˃˃˄˃Θ˃˥˂˂˂=˃˃Θ˃˥˂˂˂.˃˃Θ˃˥˂˂˂{˃˃Θ˃˥˂˂˂}˃˃Θ˃˥˂˂˂[˃˃Θ˃˥˂˂˂]˃˃Θ˃˥˂˂˂(˃˃Θ˃˥˂˂˂)˃˃Θ˃˥˂˂˂|˃˃Θ˃˥˂˂˂<˃˂˂\t˥\x0b˥\r˥\x0e˥ ˥!˥"˥#˥$˥%˥&˥\'˥(˥)˥*˥+˥,˥-˥.˥/˥0˥1˥2˥3˥4˥5˥6˥7˥8˥9˥:˥;˥<˥=˥>˥?˥@˥A˥B˥C˥D˥E˥F˥G˥H˥I˥J˥K˥L˥M˥N˥O˥P˥Q˥R˥S˥T˥U˥V˥W˥X˥Y˥Z˥[˥\\˥]˥^˥_˥`˥a˥b˥c˥d˥e˥f˥g˥h˥i˥j˥k˥l˥m˥n˥o˥p˥q˥r˥s˥t˥u˥v˥w˥x˥y˥z˥{˥|˥}˥~˥\x7f˥\r˥\t˥ ˃˃˄˂>˃˃Θ˃˥˂˂˂\n˥\r˥\t˥ ˃˂˂\n˥\r˥\t˥ ˃˃˄˃Θ˃'
-word = palabra
-
-res = replace(expression)
-res_final = add_concat(res)
-#print("Nueva expresion",res_final)
+        return expr
 
 
-# try:
-afd = AFD(res_final,word)
-# except:
-#     print("La cadena ingresa no es válida")
+    # Metodo que agrega el valor de . a la expresion
+# para facilitar la lectura de la concatenacion
+    def add_concat(self,expresion):
+        new_word = ""
+        operators = [chr(708),chr(741),chr(706),chr(709)]
+        cont = 0
+        while cont < len(expresion):
+            if cont+1 >= len(expresion):
+                new_word += expresion[-1]
+                break
+
+            if expresion[cont] == chr(708) and not (expresion[cont+1] in operators) and expresion[cont+1] != chr(707):
+                new_word += expresion[cont]+chr(765)
+                cont += 1
+            elif expresion[cont] == chr(708) and expresion[cont+1] == chr(706):
+                new_word += expresion[cont]+chr(765)
+                cont += 1
+            elif expresion[cont] == chr(709) and not (expresion[cont+1] in operators) and expresion[cont+1] != chr(707):
+                new_word += expresion[cont]+chr(765)
+                cont += 1
+            elif expresion[cont] == chr(709) and expresion[cont+1] == chr(706):
+                new_word += expresion[cont]+chr(765)
+                cont += 1
+            elif not (expresion[cont] in operators) and expresion[cont+1] == chr(707):
+                new_word += expresion[cont]
+                cont += 1
+            elif (not (expresion[cont] in operators) and not (expresion[cont+1] in operators)) or (not (expresion[cont] in operators) and (expresion[cont+1] == chr(706))):
+                new_word += expresion[cont]+chr(765)
+                cont += 1
+            else:
+                new_word += expresion[cont]
+                cont += 1
+        
+        return new_word
+    
+    #Metodo que ejecuta el AFD para analizar la produccion
+    def execAFD(self):
+        afd = AFD(self.res_final,self.word)
+        self.resultado = afd.productions
+    
+    #Devuelve el resultado de la produccion, la lista con  (caracter,tipo)
+    def getResult(self):
+        return self.resultado
+
 
     

@@ -1,10 +1,12 @@
 import re
+from scanner_prod import lecProductions
 
 #Validaciones
 # 0: SetDecl = ident '='Set.
 # 1: KeywordDecl = ident '=' string.
 # 2: Es un encabezado
 # 3: TokenDecl = ident ['='TokenExpr]["EXCEPT KEYWORDS"] '.'.
+# 4: ProdDecl = ident[<references>] '=' ANY.
 
 
 #=============== CAMBIO PARA AUTOMATAS =========================
@@ -18,12 +20,8 @@ import re
 # '#'  signo de finalizacion de exp -> CHR(920) = 'Θ' 
 
 #========= Pendientes
-# hacer los cambios en los Characters
+# Revisar los ToDo
 # Ver el regex del TokenDecl
-# El + y - no funcionan en el DFA! pensar en un reemplazo, al igual que con los otros caracteres especiales
-# No funcionan las \t y los caracteres de espacio. En el DFA
-# Probar los demas ATG
-# El ANY tiene problemas con los otros signos. Puede arruinar las cosas en el DFA
 # los caracteres que aparecen en la expresion regular, como parentesis, pueden llegar a ocasionar problemas
 
 
@@ -249,6 +247,61 @@ class Lectura():
                     expresion_final = ""
 
         # print("Tokens",self.tokens)
+
+    def readProductions(self):
+        flag = False #Para indicar que encontro TOKENS
+        expresion_final = []
+        with open(self.filename,'r') as f:
+                    lines = (line.rstrip() for line in f)
+                    expresion_final = []
+                    fin_expr = False
+                    for line in lines:
+                        if flag:
+                            if line != "\n" and line != "":
+                                #line = line.lstrip()
+                                # expresion_final += line
+                                expresion_final.append(line)
+                                # expresion_final = " ".join(expresion_final.split())
+                                if expresion_final[-1].endswith("."):
+                                    fin_expr = True
+                                else:
+                                    keys, error = self.Validator(expresion_final,[2])
+                                    if(keys):
+                                        # print("Encontro un encabezado")
+                                        flag = False
+                                        break
+
+                        if fin_expr:
+                            valid,error = self.Validator(''.join(expresion_final),[4])
+                            # print("Line->",expresion_final)
+                            if valid and not(error):
+                                prods = []
+                                prods = lecProductions(expresion_final)
+                                res = prods.getResult()
+                                key = res[0][0]
+                                value = res[1:]
+                                self.productions[key] = value
+                            elif not(valid) and not(error):
+                                # print("Pudo encontrar un encabezado")
+                                keys, error = self.Validator(expresion_final,[2])
+                                # print("Keys",keys)
+                                if(keys):
+                                    # print("Ingreso al if")
+                                    flag = False
+                                    break
+                                else:
+                                    print("Encontro una expresion no valida")
+                            elif error:
+                                print("La expresion no es valida")
+
+                            expresion_final = []
+                            fin_expr = False
+
+                        if 'PRODUCTIONS' in line:
+                            flag = True
+                            expresion_final = []
+        print("Estas son las producciones->",self.productions)
+
 
     # Metodo que obtiene los | de los characters y tambien agrega los parentesis
     def transformCharacters(self):
@@ -489,7 +542,7 @@ class Lectura():
 
             #Regla que valida si esta leyendo de los encabezados
             elif rule == 2:
-                if expr == 'CHARACTERS' or expr == 'KEYWORDS' or expr =='TOKENS' or expr =='PRODUCTIONS':
+                if expr == 'CHARACTERS' or expr == 'KEYWORDS' or expr =='TOKENS' or expr =='PRODUCTIONS' or expr=='END':
                     checked = True
                     _error = False
                 else:
@@ -498,6 +551,13 @@ class Lectura():
             #Regla que valida si esta leyendo un token
             elif rule == 3:
                 regex = r'[a-zA-Z].[a-zA-Z0-9\_]*[\s]*=[\s]*["?\[\W|\w]*"?|\(\[\W|\w]*\)|\[\[\W|\w]*\]|\{[\W|\w]*\}|\s*]*\.' # ["?\w*"?|\(\w*\)|\[\w*\]|\{\w*\}|\s]*\.    (FUNCIONA PARCIALMENTE)
+                res = re.match(regex,expr)
+                checked = res
+                _error = False
+            #TODO arreglar este regex! porque acepta todo lo del luego del igual, falta que valide que termine en .
+            #Regla que valida si esta leyendo una produccion
+            elif rule == 4:
+                regex = r'[a-zA-Z].[a-zA-Z0-9\_\<\>\s]*[\s]*=[\s]*(.*)\.'
                 res = re.match(regex,expr)
                 checked = res
                 _error = False
@@ -517,6 +577,7 @@ if __name__ == "__main__":
     lec.readKeywords()
     lec.readTokens()
     lec.transformCharacters()
+    lec.readProductions()
     expresion_final, excepciones, tokens = lec.tokenEvaluator()
 
 
