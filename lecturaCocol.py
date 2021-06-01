@@ -1,5 +1,7 @@
 import re
 from scanner_prod import lecProductions
+from procesarProducciones import Process
+# from arbolSintactico import Tree
 
 #Validaciones
 # 0: SetDecl = ident '='Set.
@@ -301,6 +303,18 @@ class Lectura():
                             flag = True
                             expresion_final = []
         print("Estas son las producciones->",self.productions)
+        procesar = Process(self.productions)
+        #ahora los tipo tok, debo cambiarlos a tipo ident, y saber que son producciones
+
+        #ahora que ya cambie los tipo tok, a ident, debo sacar los first de cada una de la producciones
+        # considerando que debo tener los no terminales y terminales tambien analizados
+
+        #Luego de tener los first, ya puedo construir el arbol sintactico
+
+
+
+    def productionsEvaluator(self):
+        print('prueba')
 
 
     # Metodo que obtiene los | de los characters y tambien agrega los parentesis
@@ -579,6 +593,7 @@ if __name__ == "__main__":
     lec.transformCharacters()
     lec.readProductions()
     expresion_final, excepciones, tokens = lec.tokenEvaluator()
+    lec.productionsEvaluator()
 
 
     automata_DFA = """ 
