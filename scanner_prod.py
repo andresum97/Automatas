@@ -701,10 +701,10 @@ class AFD:
                             break
                     if acepta:
                         resultados.append((token,identificador))
-                        print("[====== El simbolo es ",repr(token),' y es de tipo ->',identificador,'======]')
+                        # print("[====== El simbolo es ",repr(token),' y es de tipo ->',identificador,'======]')
                 else:
                     resultados.append((token,"no_esperado"))
-                    print('[======',repr(token),'es un simbolo no esperado ======]')
+                    # print('[======',repr(token),'es un simbolo no esperado ======]')
             
             self.productions = resultados
 
