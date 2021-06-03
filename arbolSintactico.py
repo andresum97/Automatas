@@ -1,12 +1,22 @@
 #Primero obtener las cadenas de las producciones ya obtenidas de las producciones
 # osea el tipo que ya tengo del proyecto 2.
 # Pensar como obtener el parrafo de producciones
+import re
+
+#TODO ya realzaste la operacion de concat y or, faltan las demas!!!
+
 class Tree():
     def __init__(self, r, f):
+        print("Esto entre en r", r)
+        print("Esto en f",f)
         self.expression =  self.add_concat(r) # Regular expression
         self.first = f
         self.values = []
         self.operators = []
+        self.root = None
+        self.childs = []
+        self.tabs = 0
+        self.process_expression()
 
         for r in self.expression:
             print('\t->', r[0], r[1])
@@ -36,20 +46,213 @@ class Tree():
 
         return new_word
 
-    def operations(self,op,):
+
+    def child_first(self,val1, val2, op):
+        if op == 'concat':
+            if val1[1] == 'ident':
+                if val1[0] in self.first.keys():
+                    return self.first[val1[0]]
+                else:
+                    return [val1[0]]
+            elif val2[1] == 'ident':
+                if val2[0] in self.first.keys():
+                    return self.first[val2[0]]
+                else:
+                    return [val2[0]]
+            else:
+                return []
+        elif op == 'union':
+            if val1[0] in self.first.keys():
+                first1 = self.first[val1[0]]
+            else:
+                first1 = [val1[0]]
+            
+            if val2[0] in self.first.keys():
+                first2 = self.first[val2[0]]
+            else:
+                first2 = [val2[0]]
+            
+            return first1 + first2
+
+    def op_concat(self, val1, val2):
+        first = []
+        if isinstance(val1, tuple) and isinstance(val2, tuple):
+            parent = val1[0] + val2[0]
+            first = val1[1]
+            return (parent, first)
+
+        elif not isinstance(val1, tuple) and not isinstance(val2, tuple):
+            parent = []
+            first = self.child_first(val1,val2,'concat')
+            
+            #First child
+            if val1[1] == 's_action':
+                parent += ['\t'*self.tabs + val1[0][2:-2]]
+            elif val1[1] == 'ident' and val1[0] in self.first.keys():
+                parent += ['\t'*self.tabs + 'if self.lookAheadToken in'+repr(self.first[val1[0]])+':']
+                parent += ['\t'*self.tabs + '\tself.'+val1[0]+'()']
+                self.tabs += 1
+            elif val1[1] == 'ident' and val1[0] not in self.first.keys():
+                parent += ['\t'* self.tabs + 'if self.lookAheadToken == "'+val1[0]+'":']
+                parent += ['\t'* self.tabs + '\tself.coincidir("'+val1[0]+'")']
+                self.tabs += 1
+
+            #Second child
+            if val2[1] == 's_action':
+                parent += ['\t'*self.tabs + val2[0][2:-2]]
+            elif val2[1] == 'ident' and val2[0] in self.first.keys():
+                parent += ['\t'*self.tabs + 'self.'+val2[0]+'()']
+                # self.tabs += 1
+            elif val2[1] == 'ident' and val2[0] not in self.first.keys():
+                parent += ['\t'* self.tabs + 'if self.lookAheadToken == "'+val2[0]+'":']
+                parent += ['\t'* self.tabs + '\tself.coincidir("'+val2[0]+'")']
+                self.tabs += 1
+            elif val2[1] == 'attr':
+                pos = parent[-1][:-2].rfind('\t') #TODO Revisa esto
+                parent[-1] = parent[-1][:-2][:pos+1] + val2[0][1:-1] + ' = ' + parent[-1][:-2][pos+1:]+'('+val2[0][1:-1]+')'
+
+            return (parent, first)
+        
+        elif isinstance(val1,tuple) and not isinstance(val2,tuple):
+            parent = val1[0]
+            first = val1[1]
+
+            #Second Child
+            if val2[1] == 's_action':
+                parent += ['\t'*self.tabs+val2[0][2:-2]]
+            elif val2[1] == 'ident' and val2[0] in self.first.keys():
+                parent += ['\t'*self.tabs+'self.'+val2[0]+'()']
+            elif val2[1] == 'ident' and val2[0] not in self.first.keys():
+                parent += ['\t'*self.tabs+'if self.lookAheadToken == "'+val2[0]+'":']
+                parent += ['\t'* self.tabs + '\tself.coincidir("'+val2[0]+'")']
+                self.tabs += 1
+            elif val2[1] == 'attr':
+                pos = parent[-1][:-2].rfind('\t') #TODO Revisa esto
+                parent[-1] = parent[-1][:-2][:pos+1] + val2[0][1:-1] + ' = ' + parent[-1][:-2][pos+1:]+'('+val2[0][1:-1]+')'
+
+            return (parent, first)
+
+
+        elif not isinstance(val1, tuple) and isinstance(val2, tuple):
+            parent = val2[0]
+
+            if val1[1] == 's_action':
+                parent = ['\t'*self.tabs+val1[0][2:-2]] + parent
+                first = val2[1]
+            elif val1[1] == 'ident' and val1[0] in self.first.keys():
+                parent = ['\t'*self.tabs + 'if self.lookAheadToken in '+repr(self.first[val1[0]])+':']
+                parent += ['\t' * self.tabs + '\tself.'+val1[0]+'()']+val2[0]
+                self.tabs += 1
+                #Calcular first
+                if val1[0] in self.first.keys():
+                   first = self.first[val1[0]]
+                else:
+                   first= [val1[0]]
+            elif val1[1] == 'ident' and val1[0] not in self.first.keys():
+                parent = ['\t'*self.tabs+'if self.lookAheadToken == "'+val1[0]+'":']
+                parent += ['\t'*self.tabs + '\tself.coincidir("'+val1[0]+'")']+val2[0]
+                first = [val1[0]]
+                self.tabs += 1
+            
+            return (parent, first)
+
+
+    def op_union(self,val1,val2):
+        
+        if isinstance(val1, tuple) and isinstance(val2, tuple):
+            self.tabs -= 1
+            parent = val1[0] + ['else:'] + val2[0]
+            self.tabs -= 1
+            return (parent, val1[1]+val2[1])
+
+        elif not isinstance(val1, tuple) and not isinstance(val2, tuple):
+            parent = []
+            first = self.child_first(val1,val2,'union')
+
+            #First child
+            if val1[1] == 'ident' and val1[0] in self.first.keys():
+                parent += ['\t'*self.tabs + 'if self.lookAheadToken in '+repr(self.first[val1[0]])]
+                parent += ['\t'*self.tabs + '\tself.'+val2[0]+'()']
+            elif val1[1] == 'ident' and val1[0] not in self.first.keys():
+                parent += ['\t'*self.tabs + 'if self.lookAheadToken == "'+val1[0]+'":']
+                parent += ['\t'*self.tabs + '\tself.coincidir("'+val1[0]+'")']
+
+            #Second child
+            if val2[1] == 'ident' and val2[0] in self.first.keys():
+                parent += ['\t'*self.tabs + 'elif self.lookAheadToken in '+repr(self.first[val2[0]])]
+                parent += ['\t'*self.tabs + '\tself.'+val2[0]+'()']
+            elif val2[1] == 'ident' and val2[0] not in self.first.keys():
+                parent += ['\t'*self.tabs + 'elif self.lookAheadToken == "'+val2[0]+'":']
+                parent += ['\t'*self.tabs + '\tself.coincidir("'+val2[0]+'")']
+
+            self.tabs -= 1
+            
+            return (parent, first)
+        
+        elif isinstance(val1,tuple) and not isinstance(val2,tuple):
+            parent = val1[0]+['else:']
+            first = val1[1]
+
+            #Second child
+            if val2[1] == 'ident' and val2[0] in self.first.keys():
+                parent += ['\t'*self.tabs + 'if self.lookAhead in '+repr(self.first[val2[0]])]
+                parent += ['\t'*self.tabs + '\tself."'+val2[0]+'()']
+                first += self.first[val2[0]]
+            elif val2[1] == 'ident' and val2[0] not in self.first.keys():
+                parent += ['\t'*self.tabs+'if self.lookAhead == "'+val2[0]+'":']
+                parent += ['\t'*self.tabs + '\tself.coincidir("'+val2[0]+'")']
+                first += [val2[0]]
+
+            self.tabs -= 1
+            return (parent, first)
+
+        elif not isinstance(val1, tuple) and isinstance(val2, tuple):
+            parent = []
+            first = val2[1]
+            self.tabs -= 1
+
+            #first child
+            if val1[1] == 'ident' and val1[0] in self.first.keys():
+                parent += ['\t'*self.tabs + 'if self.lookAhead in '+repr(self.first[val1[0]])]
+                parent += ['\t'*self.tabs + '\tself.'+val2[0]+'()']
+                first += self.first[val1[0]]
+            elif val1[1] == 'ident' and val1[0] not in self.first.keys():
+                parent += ['\t' * self.tabs + 'if self.lookAhead == "'+val1[0]+'":']
+                parent += ['\t' * self.tabs + '\tself.coincidir("'+val1[0]+'")']
+                first += [val1[0]]
+
+            parent += ['else:']+ ['\t'+i for i in val2[0]]
+
+            self.tabs -= 1
+            return (parent, first)
+
+    def operations(self,op, val):
+
+        operator = op.pop()
+
+        if len(val) == 1 and operator[1] == 'br_close':
+            val2 = ([],[])
+        else:
+            val2 = val.pop()
+
+        if len(val) == 0:
+            val1 = ([],[])
+        else:
+            val1 = val.pop()
+
         parent = None
-        if op[1] == 'concat':
-            parent = self.op_concat(va1,val2)
-        elif op[1] == 'union': 
-            parent = self.ope_union(va1,val2)
-        elif op[1] == 'br_open': 
-            parent = self.op_kleene(va1,val2)
-        elif op[1] == 'br_close': 
-            parent = self.op_kleeneClose(va1,val2)
-        elif op[1] == 'sq_open': 
-            parent = self.op_bracket(va1,val2)
-        elif op[1] == 'sq_close': 
-            parent = self.op_bracketClose(va1,val2)
+        if operator[1] == 'concat':
+            parent = self.op_concat(val1,val2)
+        elif operator[1] == 'union': 
+            parent = self.op_union(val1,val2)
+        elif operator[1] == 'br_open': 
+            parent = self.op_kleene(val1,val2)
+        elif operator[1] == 'br_close': 
+            parent = self.op_kleeneClose(val1,val2)
+        elif operator[1] == 'sq_open': 
+            parent = self.op_bracket(val1,val2)
+        elif operator[1] == 'sq_close': 
+            parent = self.op_bracketClose(val1,val2)
 
         return parent
 
@@ -66,9 +269,46 @@ class Tree():
             return 0
 
     def process_expression(self):
-        self.
+        symbols = ['ident','attr','s_action','tok','white']
+        for element in self.expression:
+            value, token = element
+            
+            if token in symbols:
+                self.values.append(element)
 
-prueba = Tree([('=', 'eq'), (' ', 'white'), ('{', 'br_open'), ('Stat', 'ident'), (' ', 'white'), ('";"', 'tok'), ('{', 'br_open'), ('white', 'ident'), ('}', 'br_close'), ('}', 'br_close'), ('{', 'br_open'), ('white', 'ident'), ('}', 'br_close'), ('"."', 'tok'), ('.', 'p_end')],None)
+            elif token == 'p_open':
+                self.operators.append(element)
+
+            #Revisar si esto puede dar error
+            elif token == 'p_close':    
+                op = self.operators[-1] if self.operators else None
+                while(op is not None and token != 'p_open'):
+                    parent = self.operations(self.operators, self.values)
+                    self.values.append(parent)
+                    op = self.operators[-1] if self.operators else None
+                
+                self.operators.pop()
+                self.tabs -= 1
+                #Falta ver lo de los tabs
+
+            else:
+                op = self.operators[-1] if self.operators else None
+
+                while op is not None and token not in ['p_open','p_close'] and (self.status(op[1]) >= self.status(token)):
+                    parent = self.operations(self.operators, self.values)
+                    self.values.append(parent)
+                    op = self.operators[-1] if self.operators else None
+                
+                self.operators.append(element)
+
+        while(self.operators):
+            parent = self.operations(self.operators, self.values)
+            self.values.append(parent)
+
+        self.root = self.values.pop()
+        print(self.root)
+            
+# prueba = Tree([('=', 'eq'), (' ', 'white'), ('{', 'br_open'), ('Stat', 'ident'), (' ', 'white'), ('";"', 'tok'), ('{', 'br_open'), ('white', 'ident'), ('}', 'br_close'), ('}', 'br_close'), ('{', 'br_open'), ('white', 'ident'), ('}', 'br_close'), ('"."', 'tok'), ('.', 'p_end')],None)
     # def __init__(self, value, first=[]):
     #     self.value = value
     #     self.left = None

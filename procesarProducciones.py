@@ -1,3 +1,4 @@
+from arbolSintactico import Tree
 class Process:
     def __init__(self, prod):
         self.productions = prod
@@ -9,24 +10,29 @@ class Process:
         self.results = []
         self.contTokens = 0
         self.processProductions()
+        self.createTree()
         # print("Nuevas producciones",self.newProd)
         print("Nuevos tokens",self.tokens)
         print("No terminales",self.noterminals)
         # res = self.first([('\t', 'white'), ('(', 'p_open'), ('number', 'ident'), ('\t', 'white'), ('|', 'union'), ('decnumber', 'ident'), (')', 'p_close'), ('(.result = float(self.lastvalue).)', 's_action'), ('\t', 'white'), ('(.return result.)', 's_action'), ('\t', 'white'), ('.', 'p_end')])
         # print("First primero",res)
 
-
+    #Metodo que obtiene los no terminales, los valores de los tokens y los first de cada produccion
     def processProductions(self):
         self.getTokens()
         self.getNoTerminals()
         print("Solo values",self.newProdValues)
 
         for key in reversed(self.productions.keys()):
-            print("Esto es first",self.firsts, "Llave que estoy viendo ",key)
+            # print("Esto es first",self.firsts, "Llave que estoy viendo ",key)
             self.firsts[key] = self.first(self.newProdValues[key])
 
         print("Dictoario de first",self.firsts)
 
+
+    def createTree(self):
+        for key, value in self.newProdValues.items():
+            tree = Tree(value,self.firsts[key])
 
     #Metodo para guardar los tokens y transformar los strings de producciones
     #en tokens
