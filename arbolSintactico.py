@@ -7,10 +7,10 @@ import re
 
 class Tree():
     def __init__(self, r, f):
-        print("Esto entre en r", r)
-        print("Esto en f",f)
+        # print("Esto entre en r", r)
+        # print("Esto en f",f)
         self.expression =  self.add_concat(r) # Regular expression
-        print("Lista con concatenacion",self.expression)
+        # print("Lista con concatenacion",self.expression)
         self.first = f
         self.values = []
         self.operators = []
@@ -21,6 +21,9 @@ class Tree():
 
         for r in self.expression:
             print('\t->', r[0], r[1])
+
+    def getTree(self):
+        return self.root[0]
 
     #Metodo para agregar la concatenacion
     def add_concat(self,expression):
@@ -272,7 +275,7 @@ class Tree():
                 parent += ['\t'*self.tabs+'if self.actualToken in '+repr(self.first[val2[0]])]
                 parent += ['\t'*self.tabs+'\tself.'+val2[0]+'()']
             elif val2[1] == 'ident' and val2[0] not in self.first.keys():
-                parent += ['\t'*self.tabs+'if self.actualToken == :'+val2[0]+'":']
+                parent += ['\t'*self.tabs+'if self.actualToken == "'+val2[0]+'":']
                 parent += ['\t'*self.tabs+'\tself.coincidir("'+val2[0]+'")']
 
         return (parent, first)
@@ -351,7 +354,7 @@ class Tree():
         elif operator[1] == 'sq_close': 
             parent = self.op_bracketClose(val1,val2)
 
-        print('Parent =>',parent,' y operator =>',operator[1])
+        # print('Parent =>',parent,' y operator =>',operator[1])
 
         return parent
 
@@ -372,7 +375,7 @@ class Tree():
         for element in self.expression:
             value, token = element
 
-            print("Esto es token",token)
+            # print("Esto es token",token)
             
             if token in symbols:
                 self.values.append(element)
@@ -410,8 +413,8 @@ class Tree():
         self.root = self.values.pop()
         # print("Root =>",self.root)
 
-        for element in self.root[0]:
-            print(element)
+        # for element in self.root[0]:
+        #     print(element)
             
 # prueba = Tree([('=', 'eq'), (' ', 'white'), ('{', 'br_open'), ('Stat', 'ident'), (' ', 'white'), ('";"', 'tok'), ('{', 'br_open'), ('white', 'ident'), ('}', 'br_close'), ('}', 'br_close'), ('{', 'br_open'), ('white', 'ident'), ('}', 'br_close'), ('"."', 'tok'), ('.', 'p_end')],None)
     # def __init__(self, value, first=[]):

@@ -39,6 +39,7 @@ class Lectura():
         self.final_expresion = ""
 
     def readCharacters(self):
+        print("============= Leyendo los Characters =============")
         flag = False #Para indicar que encontro CHARACTER
         with open(self.filename,'r',encoding='utf-8') as f:
             lines = (line.rstrip() for line in f)
@@ -199,6 +200,7 @@ class Lectura():
         # print("Keywords",self.keywords)
 
     def readTokens(self):
+        print("============= Leyendo los tokens =============")
         flag = False #Para indicar que encontro TOKENS
         with open(self.filename,'r') as f:
             lines = (line.rstrip() for line in f)
@@ -251,6 +253,7 @@ class Lectura():
         # print("Tokens",self.tokens)
 
     def readProductions(self):
+        print("============= Leyendo las producciones =============")
         flag = False #Para indicar que encontro TOKENS
         expresion_final = []
         with open(self.filename,'r') as f:
@@ -278,6 +281,7 @@ class Lectura():
                             # print("Line->",expresion_final)
                             if valid and not(error):
                                 prods = []
+                                print("============= Analizando Producción =============")
                                 prods = lecProductions(expresion_final)
                                 res = prods.getResult()
                                 key = res[0][0]
@@ -302,20 +306,19 @@ class Lectura():
                         if 'PRODUCTIONS' in line:
                             flag = True
                             expresion_final = []
-        print("Estas son las producciones->",self.productions)
-        procesar = Process(self.productions)
+        # print("Estas son las producciones->",self.productions)
+        print("============= Ha iniciado a procesar las producciones =============")
+        procesar = Process(self.productions,self.filename)
+        newTokens = procesar.getNewTokens() #Aqui se obtienen los tokens obtenidos de las producciones
+        for key,value in newTokens.items():
+            self.tokens[value] = key
+
         #ahora los tipo tok, debo cambiarlos a tipo ident, y saber que son producciones
 
         #ahora que ya cambie los tipo tok, a ident, debo sacar los first de cada una de la producciones
         # considerando que debo tener los no terminales y terminales tambien analizados
 
         #Luego de tener los first, ya puedo construir el arbol sintactico
-
-
-
-    def productionsEvaluator(self):
-        print('prueba')
-
 
     # Metodo que obtiene los | de los characters y tambien agrega los parentesis
     def transformCharacters(self):
@@ -593,7 +596,9 @@ if __name__ == "__main__":
     lec.transformCharacters()
     lec.readProductions()
     expresion_final, excepciones, tokens = lec.tokenEvaluator()
-    lec.productionsEvaluator()
+    name = archivoATG[:-4]
+    fileParser = 'Parser'+name
+    # lec.productionsEvaluator()
 
 
     automata_DFA = """ 
@@ -601,6 +606,7 @@ if __name__ == "__main__":
 import leaf
 from graphviz import Digraph
 import json
+from {fileParser} import Parser
 
 class AFD:
     def __init__(self,r,w):
@@ -1281,6 +1287,7 @@ class AFD:
             pass
 
     
+        elementsToParser = []
         # self.Simulacion()
         pos = 0
         while pos < len(self.word):
@@ -1294,8 +1301,12 @@ class AFD:
                         break
                 if acepta:
                     print("[====== El simbolo es ",repr(token),' y es de tipo ->',identificador,'======]')
+                    elementsToParser.append((token,identificador))
             else:
                 print('[======',repr(token),'es un simbolo no esperado ======]')
+                elementsToParser.append((token,identificador))
+
+        Parser(elementsToParser)
 
 
 
@@ -1391,7 +1402,7 @@ afd = AFD(res_final,word)
 # except:
 #     print("La cadena ingresa no es válida")
 
-    """.format(expresion_regular = expresion_final, tokens=tokens,excepciones=excepciones)
+    """.format(expresion_regular = expresion_final, tokens=tokens,excepciones=excepciones,fileParser=fileParser)
 
     scanner = open("scanner.py","w",encoding='utf-8')
     scanner.write(automata_DFA)
