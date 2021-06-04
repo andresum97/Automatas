@@ -31,8 +31,40 @@ class Process:
 
 
     def createTree(self):
+        program = ''' 
+class Parser():
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.actualToken = None
+        self.posToken = 0
+        self.lookAheadToken = self.tokens[self.posToken]
+        self.next()
+        self.lastToken = None
+        self.principal()
+
+    def next(self):
+        if self.posToken - 1 < 0:
+            self.lastToken == None
+        else:
+            self.lastToken = self.tokens[self.posToken - 1][0]
+        
+        if self.lookAheadToken == None:
+            self.actualToken = None
+        else:
+            self.actualToken = self.lookAheadToken[1]
+        
+        self.posToken += 1
+
+        if self.posToken >= len(self.tokens):
+            self.lookAheadToken = None
+        else:
+            self.lookAheadToken = self.tokens[self.posToken]
+
+    def principal(self):
+        '''
         for key, value in self.newProdValues.items():
-            tree = Tree(value,self.firsts[key])
+            print("Ingreso este item ",key)
+            tree = Tree(value,self.firsts)
 
     #Metodo para guardar los tokens y transformar los strings de producciones
     #en tokens
@@ -53,9 +85,9 @@ class Process:
                     print("Entro a este if")
                     isValue = True
                 else:
-                    if element[1]!='white':   
+                    if element[1]!='white' and element[1]!='p_end':   
                         temp.append(element)
-                    if isValue and element[1]!='white':
+                    if isValue and element[1]!='white' and element[1]!='p_end':
                         tempValues.append(element)
 
             self.newProd[key] = temp
