@@ -1,29 +1,29 @@
 import re
+from scanner_prod import lecProductions
+from procesarProducciones import Process
+# from arbolSintactico import Tree
 
 #Validaciones
 # 0: SetDecl = ident '='Set.
 # 1: KeywordDecl = ident '=' string.
 # 2: Es un encabezado
 # 3: TokenDecl = ident ['='TokenExpr]["EXCEPT KEYWORDS"] '.'.
+# 4: ProdDecl = ident[<references>] '=' ANY.
 
 
 #=============== CAMBIO PARA AUTOMATAS =========================
-# '('  parentesis inicial ->   CHR(706) = '˂' listo
-# ')'  parentesis final -> CHR(707) = '˃' listo
-# '*'  cerradura kleene -> CHR(708) = '˄' listo
-# '|'  pipe de OR -> CHR(741) = '˥' listo
+# '('  parentesis inicial ->   CHR(706) = '˂'
+# ')'  parentesis final -> CHR(707) = '˃' 
+# '*'  cerradura kleene -> CHR(708) = '˄' 
+# '|'  pipe de OR -> CHR(741) = '˥' 
 # '?'  interrogacion -> CHR(709) = '˅'
-# '.'  concatenacion -> CHR(765) = '˽'    listo
+# '.'  concatenacion -> CHR(765) = '˽'   
 # '+'  agregar otra cerradura -> CHR(931) = 'Σ'
-# '#'  signo de finalizacion de exp -> CHR(920) = 'Θ'       listo
+# '#'  signo de finalizacion de exp -> CHR(920) = 'Θ' 
 
 #========= Pendientes
-# hacer los cambios en los Characters
+# Revisar los ToDo
 # Ver el regex del TokenDecl
-# El + y - no funcionan en el DFA! pensar en un reemplazo, al igual que con los otros caracteres especiales
-# No funcionan las \t y los caracteres de espacio. En el DFA
-# Probar los demas ATG
-# El ANY tiene problemas con los otros signos. Puede arruinar las cosas en el DFA
 # los caracteres que aparecen en la expresion regular, como parentesis, pueden llegar a ocasionar problemas
 
 
@@ -39,6 +39,7 @@ class Lectura():
         self.final_expresion = ""
 
     def readCharacters(self):
+        print("============= Leyendo los Characters =============")
         flag = False #Para indicar que encontro CHARACTER
         with open(self.filename,'r',encoding='utf-8') as f:
             lines = (line.rstrip() for line in f)
@@ -199,6 +200,7 @@ class Lectura():
         # print("Keywords",self.keywords)
 
     def readTokens(self):
+        print("============= Leyendo los tokens =============")
         flag = False #Para indicar que encontro TOKENS
         with open(self.filename,'r') as f:
             lines = (line.rstrip() for line in f)
@@ -249,6 +251,74 @@ class Lectura():
                     expresion_final = ""
 
         # print("Tokens",self.tokens)
+
+    def readProductions(self):
+        print("============= Leyendo las producciones =============")
+        flag = False #Para indicar que encontro TOKENS
+        expresion_final = []
+        with open(self.filename,'r') as f:
+                    lines = (line.rstrip() for line in f)
+                    expresion_final = []
+                    fin_expr = False
+                    for line in lines:
+                        if flag:
+                            if line != "\n" and line != "":
+                                #line = line.lstrip()
+                                # expresion_final += line
+                                expresion_final.append(line)
+                                # expresion_final = " ".join(expresion_final.split())
+                                if expresion_final[-1].endswith("."):
+                                    fin_expr = True
+                                else:
+                                    keys, error = self.Validator(expresion_final,[2])
+                                    if(keys):
+                                        # print("Encontro un encabezado")
+                                        flag = False
+                                        break
+
+                        if fin_expr:
+                            valid,error = self.Validator(''.join(expresion_final),[4])
+                            # print("Line->",expresion_final)
+                            if valid and not(error):
+                                prods = []
+                                print("============= Analizando Producción =============")
+                                prods = lecProductions(expresion_final)
+                                res = prods.getResult()
+                                key = res[0][0]
+                                value = res[1:]
+                                self.productions[key] = value
+                            elif not(valid) and not(error):
+                                # print("Pudo encontrar un encabezado")
+                                keys, error = self.Validator(expresion_final,[2])
+                                # print("Keys",keys)
+                                if(keys):
+                                    # print("Ingreso al if")
+                                    flag = False
+                                    break
+                                else:
+                                    print("Encontro una expresion no valida")
+                            elif error:
+                                print("La expresion no es valida")
+
+                            expresion_final = []
+                            fin_expr = False
+
+                        if 'PRODUCTIONS' in line:
+                            flag = True
+                            expresion_final = []
+        # print("Estas son las producciones->",self.productions)
+        print("============= Ha iniciado a procesar las producciones =============")
+        procesar = Process(self.productions,self.filename)
+        newTokens = procesar.getNewTokens() #Aqui se obtienen los tokens obtenidos de las producciones
+        for key,value in newTokens.items():
+            self.tokens[value] = key
+
+        #ahora los tipo tok, debo cambiarlos a tipo ident, y saber que son producciones
+
+        #ahora que ya cambie los tipo tok, a ident, debo sacar los first de cada una de la producciones
+        # considerando que debo tener los no terminales y terminales tambien analizados
+
+        #Luego de tener los first, ya puedo construir el arbol sintactico
 
     # Metodo que obtiene los | de los characters y tambien agrega los parentesis
     def transformCharacters(self):
@@ -363,7 +433,7 @@ class Lectura():
             self.tokens[key] = new_word.replace(chr(1000),'')
 
 
-        # print("Token ya con cerradura -> ",self.tokens)
+        print("Token ya con cerradura -> ",self.tokens)
 
         primero = True
         #Para devolver el gran string
@@ -440,7 +510,11 @@ class Lectura():
             index = expresion.find("ANY")
             primer = expresion[:index].rstrip().lstrip()
             segundo = expresion[index+3:].rstrip().lstrip()
-            for x in self.char_range(chr(0),chr(255)):
+            for x in self.char_range(chr(9),chr(11)):
+                respuesta += x
+            for x in self.char_range(chr(13),chr(14)):
+                respuesta += x
+            for x in self.char_range(chr(32),chr(127)):
                 respuesta += x
             final = primer+chr(1000)+respuesta+chr(1000)+segundo
         else:
@@ -471,21 +545,21 @@ class Lectura():
             res = None
             #Regla que valida SetDecl
             if rule == 0:
-                regex = r'[a-zA-Z].[a-zA-Z0-9]*[\s]?=[\s]*"?[\W|\w]*"?[\s]*([+|-]"?[\W|\w]*"?)*\.'
+                regex = r'[a-zA-Z].[a-zA-Z0-9\_]*[\s]*=[\s]*"?[\W|\w]*"?[\s]*([+|-]"?[\W|\w]*"?)*\.'
                 res = re.match(regex,expr)
                 checked = res
                 _error = False
 
             #Regla que valida KeyboardDecl
             elif rule == 1:
-                regex = r'[a-zA-Z].[a-zA-Z0-9]* = (.*).'   #"(.*)".
+                regex = r'[a-zA-Z].[a-zA-Z0-9\_]*[\s]*=[\s]*(.*).'   #"(.*)".
                 res = re.match(regex,expr)
                 checked = res
                 _error = False
 
             #Regla que valida si esta leyendo de los encabezados
             elif rule == 2:
-                if expr == 'CHARACTERS' or expr == 'KEYWORDS' or expr =='TOKENS' or expr =='PRODUCTIONS':
+                if expr == 'CHARACTERS' or expr == 'KEYWORDS' or expr =='TOKENS' or expr =='PRODUCTIONS' or expr=='END':
                     checked = True
                     _error = False
                 else:
@@ -493,7 +567,14 @@ class Lectura():
             
             #Regla que valida si esta leyendo un token
             elif rule == 3:
-                regex = r'[a-zA-Z].[a-zA-Z0-9]* = ["?\[\W|\w]*"?|\(\[\W|\w]*\)|\[\[\W|\w]*\]|\{[\W|\w]*\}|\s*]*\.' # ["?\w*"?|\(\w*\)|\[\w*\]|\{\w*\}|\s]*\.    (FUNCIONA PARCIALMENTE)
+                regex = r'[a-zA-Z].[a-zA-Z0-9\_]*[\s]*=[\s]*["?\[\W|\w]*"?|\(\[\W|\w]*\)|\[\[\W|\w]*\]|\{[\W|\w]*\}|\s*]*\.' # ["?\w*"?|\(\w*\)|\[\w*\]|\{\w*\}|\s]*\.    (FUNCIONA PARCIALMENTE)
+                res = re.match(regex,expr)
+                checked = res
+                _error = False
+            #TODO arreglar este regex! porque acepta todo lo del luego del igual, falta que valide que termine en .
+            #Regla que valida si esta leyendo una produccion
+            elif rule == 4:
+                regex = r'[a-zA-Z].[a-zA-Z0-9\_\<\>\s]*[\s]*=[\s]*(.*)\.'
                 res = re.match(regex,expr)
                 checked = res
                 _error = False
@@ -505,14 +586,19 @@ class Lectura():
 
 
 if __name__ == "__main__":
-    lec = Lectura('CoCoL.ATG')
+    archivoATG = input("Ingrese el nombre del archivo de lectura ")
+    lec = Lectura(archivoATG)
     # print("Caracter:",lec.charValidator('eol+tab'))
     lec.readCharacters()
     # print("=======================================================")
     lec.readKeywords()
     lec.readTokens()
     lec.transformCharacters()
+    lec.readProductions()
     expresion_final, excepciones, tokens = lec.tokenEvaluator()
+    name = archivoATG[:-4]
+    fileParser = 'Parser'+name
+    # lec.productionsEvaluator()
 
 
     automata_DFA = """ 
@@ -520,6 +606,7 @@ if __name__ == "__main__":
 import leaf
 from graphviz import Digraph
 import json
+from {fileParser} import Parser
 
 class AFD:
     def __init__(self,r,w):
@@ -1200,6 +1287,7 @@ class AFD:
             pass
 
     
+        elementsToParser = []
         # self.Simulacion()
         pos = 0
         while pos < len(self.word):
@@ -1213,8 +1301,12 @@ class AFD:
                         break
                 if acepta:
                     print("[====== El simbolo es ",repr(token),' y es de tipo ->',identificador,'======]')
+                    elementsToParser.append((token,identificador))
             else:
                 print('[======',repr(token),'es un simbolo no esperado ======]')
+                elementsToParser.append((token,identificador))
+
+        Parser(elementsToParser)
 
 
 
@@ -1293,7 +1385,8 @@ def replace(r):
 
     return expr
 
-palabrafile = open("palabras.txt",'r',encoding='utf-8')
+archivo = input("Ingrese archivo de prueba txt ")
+palabrafile = open(archivo,'r',encoding='utf-8')
 palabra = palabrafile.read()#input('Palabra a guardar: ')
 
 expression = {expresion_regular}
@@ -1309,7 +1402,7 @@ afd = AFD(res_final,word)
 # except:
 #     print("La cadena ingresa no es válida")
 
-    """.format(expresion_regular = expresion_final, tokens=tokens,excepciones=excepciones)
+    """.format(expresion_regular = expresion_final, tokens=tokens,excepciones=excepciones,fileParser=fileParser)
 
     scanner = open("scanner.py","w",encoding='utf-8')
     scanner.write(automata_DFA)

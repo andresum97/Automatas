@@ -1,0 +1,25 @@
+COMPILER Max
+
+CHARACTERS
+digit    = "0123456789".
+
+TOKENS
+number = digit{digit}.
+decnumber = digit{digit}"."digit{digit}.
+
+PRODUCTIONS
+Number =
+    (number | decnumber)
+    (.n = float(self.lastToken).)
+    {"," (number | decnumber)
+    GetMax<n>
+    }
+    (.print(f"El numero maximo es {n}").)
+    .
+
+GetMax<num1> = (.lista = [num1, float(self.lastToken)].)
+    (.lista.sort().)
+    (.return lista[-1].)
+    .
+
+END Max
