@@ -19,9 +19,6 @@ class Tree():
         self.tabs = 0
         self.process_expression()
 
-        for r in self.expression:
-            print('\t->', r[0], r[1])
-
     def getTree(self):
         return self.root[0]
 
@@ -393,7 +390,6 @@ class Tree():
                 
                 self.operators.pop()
                 self.tabs -= 1
-                #Falta ver lo de los tabs
 
             else:
                 op = self.operators[-1] if self.operators else None

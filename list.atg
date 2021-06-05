@@ -1,0 +1,20 @@
+COMPILER List
+
+CHARACTERS
+letter   = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+digit    = "0123456789".
+
+TOKENS
+ident = letter{letter|digit}.
+
+PRODUCTIONS
+IdentList =
+    ident            
+    (.n = 1.)
+    (.print(f"Ident found: {self.lastToken}").)
+    {"," ident       (.n += 1.)
+    (.print(f"Ident found: {self.lastToken}").)
+    }                (.print(f"Hay {n} elementos en la lista.").)
+    .
+
+END List
